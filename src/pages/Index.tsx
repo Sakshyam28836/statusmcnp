@@ -10,27 +10,29 @@ import { GameModeNav } from '@/components/GameModeNav';
 import { Users, Clock, Wifi, Activity } from 'lucide-react';
 
 const Index = () => {
-  const { 
-    javaStatus, 
-    bedrockStatus, 
-    status, 
-    lastChecked, 
-    isLoading, 
+  const {
+    javaStatus,
+    bedrockStatus,
+    status,
+    lastChecked,
+    isLoading,
     uptimeHistory,
     notificationsEnabled,
     enableNotifications,
-    refetch 
+    refetch
   } = useServerStatus(10000); // Check every 10 seconds
 
-  const totalPlayers = 
-    (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
-  
-  const maxPlayers = 
-    (javaStatus?.players?.max || 0) + (bedrockStatus?.players?.max || 0);
+  const totalPlayers =
+    (javaStatus?.players?.online || 0) +
+    (bedrockStatus?.players?.online || 0);
+
+  const maxPlayers =
+    (javaStatus?.players?.max || 0) +
+    (bedrockStatus?.players?.max || 0);
 
   return (
     <div className="min-h-screen bg-background bg-grid-pattern">
-      <Header 
+      <Header
         status={status}
         lastChecked={lastChecked}
         onRefresh={refetch}
@@ -52,8 +54,20 @@ const Index = () => {
           <StatsCard
             icon={Activity}
             label="Server Status"
-            value={status === 'online' ? 'Operational' : status === 'offline' ? 'Down' : 'Checking'}
-            variant={status === 'online' ? 'success' : status === 'offline' ? 'destructive' : 'warning'}
+            value={
+              status === 'online'
+                ? 'Operational'
+                : status === 'offline'
+                ? 'Down'
+                : 'Checking'
+            }
+            variant={
+              status === 'online'
+                ? 'success'
+                : status === 'offline'
+                ? 'destructive'
+                : 'warning'
+            }
           />
           <StatsCard
             icon={Wifi}
@@ -94,7 +108,10 @@ const Index = () => {
 
         {/* Live Status Indicator */}
         <section className="mb-8">
-          <UptimeIndicator uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
+          <UptimeIndicator
+            uptimeHistory={uptimeHistory}
+            isOnline={status === 'online'}
+          />
         </section>
 
         {/* Historical Uptime Chart */}
@@ -108,13 +125,22 @@ const Index = () => {
           <GameModeNav />
         </section>
 
-        </div>
-        <div class="card">
-            <h3>Community Discord</h3>
-            <iframe src="https://discord.com/widget?id=1342166321756115005&theme=dark" width="100%" height="250" allowtransparency="true" frameborder="0" style="margin-top:15px; border-radius:10px;"></iframe>
-        </div>
-    </div>
-</section>
+        {/* Community Discord Embed */}
+        <section className="mb-10">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-md">
+            <h3 className="text-lg font-semibold mb-4">
+              Community Discord
+            </h3>
+            <iframe
+              src="https://discord.com/widget?id=1342166321756115005&theme=dark"
+              width="100%"
+              height="250"
+              allowTransparency={true}
+              frameBorder="0"
+              className="rounded-lg"
+            />
+          </div>
+        </section>
 
         {/* Footer */}
         <footer className="text-center py-8 border-t border-border">
@@ -125,12 +151,10 @@ const Index = () => {
             Powered by MCNP Network
           </p>
           <p className="text-muted-foreground/60 text-xs mt-2">
-            Made by Sakshyxm • © {new Date().getFullYear()} MCNP Network
+            Made by Sakshyam Paudel • © {new Date().getFullYear()} MCNP Network
           </p>
         </footer>
       </main>
     </div>
   );
 };
-
-export default Index;
