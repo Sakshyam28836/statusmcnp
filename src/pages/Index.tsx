@@ -3,6 +3,7 @@ import { Header } from '@/components/Header';
 import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
 import { UptimeIndicator } from '@/components/UptimeIndicator';
+import { GameModeNav } from '@/components/GameModeNav';
 import { Users, Clock, Wifi, Activity } from 'lucide-react';
 
 const Index = () => {
@@ -12,8 +13,9 @@ const Index = () => {
     status, 
     lastChecked, 
     isLoading, 
+    uptimeHistory,
     refetch 
-  } = useServerStatus(30000);
+  } = useServerStatus(10000); // Check every 10 seconds
 
   const totalPlayers = 
     (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
@@ -80,16 +82,24 @@ const Index = () => {
 
         {/* Uptime */}
         <section className="mb-8">
-          <UptimeIndicator isOnline={status === 'online'} />
+          <UptimeIndicator uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
+        </section>
+
+        {/* Game Modes */}
+        <section className="mb-8">
+          <GameModeNav />
         </section>
 
         {/* Footer */}
         <footer className="text-center py-8 border-t border-border">
           <p className="text-muted-foreground text-sm">
-            Auto-refreshes every 30 seconds • Powered by mcsrvstat.us API
+            Auto-refreshes every 10 seconds • Real-time status updates
+          </p>
+          <p className="text-primary font-medium mt-2">
+            Powered by MCNP Network
           </p>
           <p className="text-muted-foreground/60 text-xs mt-2">
-            © {new Date().getFullYear()} MCNP Network
+            Made by Sakshyxm • © {new Date().getFullYear()} MCNP Network
           </p>
         </footer>
       </main>
