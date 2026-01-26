@@ -20,11 +20,10 @@ const Index = () => {
     notificationsEnabled,
     enableNotifications,
     refetch 
-  } = useServerStatus(10000); // Check every 10 seconds
+  } = useServerStatus(10000);
 
   const totalPlayers = 
     (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
-  
   const maxPlayers = 
     (javaStatus?.players?.max || 0) + (bedrockStatus?.players?.max || 0);
 
@@ -40,7 +39,6 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
-        {/* Quick Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={Users}
@@ -71,7 +69,6 @@ const Index = () => {
           />
         </section>
 
-        {/* Server Cards */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <ServerCard
             title="Java Edition"
@@ -87,36 +84,38 @@ const Index = () => {
           />
         </section>
 
-        {/* Player List */}
         <section className="mb-8">
           <PlayerList javaStatus={javaStatus} bedrockStatus={bedrockStatus} />
         </section>
 
-        {/* Live Status Indicator */}
         <section className="mb-8">
           <UptimeIndicator uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
         </section>
 
-        {/* Historical Uptime Chart */}
         <section className="mb-8">
           <UptimeChart uptimeHistory={uptimeHistory} />
         </section>
 
-        {/* Discord + Game Modes */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
+          <div className="flex flex-col gap-6">
+            <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
+            
+            {/* Community Discord Card Integration */}
+            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-2">Community Discord</h3>
+              <iframe 
+                src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
+                width="100%" 
+                height="250" 
+                allowTransparency={true} 
+                frameBorder="0" 
+                style={{ marginTop: '15px', borderRadius: '10px' }}
+              ></iframe>
+            </div>
+          </div>
           <GameModeNav />
         </section>
 
-        </div>
-        <div class="card">
-            <h3>Community Discord</h3>
-            <iframe src="https://discord.com/widget?id=1342166321756115005&theme=dark" width="100%" height="250" allowtransparency="true" frameborder="0" style="margin-top:15px; border-radius:10px;"></iframe>
-        </div>
-    </div>
-</section>
-
-        {/* Footer */}
         <footer className="text-center py-8 border-t border-border">
           <p className="text-muted-foreground text-sm">
             Auto-refreshes every 10 seconds • Real-time status updates
