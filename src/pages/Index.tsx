@@ -104,7 +104,7 @@ const Index = () => {
 
         {/* Discord + Game Modes */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <DiscordWidget inviteLink="https://discord.gg/mcnp" />
+          <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
           <GameModeNav />
         </section>
 
