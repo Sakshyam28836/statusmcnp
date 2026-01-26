@@ -108,6 +108,14 @@ const Index = () => {
           <GameModeNav />
         </section>
 
+        </div>
+        <div class="card">
+            <h3>Community Discord</h3>
+            <iframe src="https://discord.com/widget?id=1342166321756115005&theme=dark" width="100%" height="250" allowtransparency="true" frameborder="0" style="margin-top:15px; border-radius:10px;"></iframe>
+        </div>
+    </div>
+</section>
+
         {/* Footer */}
         <footer className="text-center py-8 border-t border-border">
           <p className="text-muted-foreground text-sm">
