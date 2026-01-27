@@ -18,7 +18,7 @@ const SocialMedia = () => {
     },
     {
       name: 'TikTok',
-      url: 'https://tiktok.com/@mcnpnetwork',
+      url: 'https://www.tiktok.com/@mcnpnetwork?_r=1&_t=ZS-93Q3zfqryOS',
       icon: '🎵',
       description: 'Check out our short clips and viral moments',
       color: 'bg-pink-500/20 border-pink-500/30 hover:bg-pink-500/30',
@@ -26,7 +26,7 @@ const SocialMedia = () => {
     },
     {
       name: 'Instagram',
-      url: 'https://instagram.com/mcnpnetwork',
+      url: 'https://www.instagram.com/minecraftnp?igsh=MWNzbzZmZHM3YmV6dw%3D%3D&utm_source=qr',
       icon: '📸',
       description: 'Follow us for behind-the-scenes and updates',
       color: 'bg-purple-500/20 border-purple-500/30 hover:bg-purple-500/30',
