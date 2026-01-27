@@ -7,7 +7,8 @@ import { UptimeChart } from '@/components/UptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
-import { Users, Clock, Wifi, Activity } from 'lucide-react';
+import { NavLink } from '@/components/NavLink';
+import { Users, Clock, Wifi, Activity, Share2, UserCircle } from 'lucide-react';
 
 const Index = () => {
   const { 
@@ -39,6 +40,17 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
+        <nav className="flex items-center gap-4 mb-8">
+          <NavLink to="/social" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
+            <Share2 className="w-4 h-4" />
+            Social Media
+          </NavLink>
+          <NavLink to="/staff" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
+            <UserCircle className="w-4 h-4" />
+            Staff
+          </NavLink>
+        </nav>
+
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={Users}
@@ -64,7 +76,7 @@ const Index = () => {
             icon={Clock}
             label="Bedrock Edition"
             value={bedrockStatus?.online ? 'Online' : 'Offline'}
-            subtext="Port: 8188"
+            subtext="Port: 19132"
             variant={bedrockStatus?.online ? 'success' : 'destructive'}
           />
         </section>
@@ -79,7 +91,7 @@ const Index = () => {
           <ServerCard
             title="Bedrock Edition"
             serverData={bedrockStatus}
-            serverAddress="play.mcnpnetwork.com:8188"
+            serverAddress="play.mcnpnetwork.com:19132"
             isLoading={isLoading}
           />
         </section>
