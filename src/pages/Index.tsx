@@ -8,7 +8,6 @@ import { PlayerList } from '@/components/PlayerList';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { NavLink } from '@/components/NavLink';
-import { MaintenanceBanner } from '@/components/MaintenanceBanner';
 import { Users, Clock, Wifi, Activity, Share2, UserCircle } from 'lucide-react';
 
 const Index = () => {
@@ -41,8 +40,6 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
-        {/* Maintenance Banner */}
-        <MaintenanceBanner javaStatus={javaStatus} />
         <nav className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           <NavLink to="/social" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
             <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
