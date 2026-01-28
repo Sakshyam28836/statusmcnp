@@ -24,17 +24,14 @@ const Index = () => {
     refetch 
   } = useServerStatus(10000);
 
-  const totalPlayers =
-    (javaStatus?.players?.online || 0) +
-    (bedrockStatus?.players?.online || 0);
-
-  const maxPlayers =
-    (javaStatus?.players?.max || 0) +
-    (bedrockStatus?.players?.max || 0);
+  const totalPlayers = 
+    (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
+  const maxPlayers = 
+    (javaStatus?.players?.max || 0) + (bedrockStatus?.players?.max || 0);
 
   return (
     <div className="min-h-screen bg-background bg-grid-pattern">
-      <Header
+      <Header 
         status={status}
         lastChecked={lastChecked}
         onRefresh={refetch}
@@ -44,102 +41,49 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
+        {/* Maintenance Banner */}
         <MaintenanceBanner javaStatus={javaStatus} />
-
         <nav className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <NavLink
-            to="/social"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all"
-          >
+          <NavLink to="/social" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
             <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
             Social Media
           </NavLink>
-
-          <NavLink
-            to="/staff"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all"
-          >
+          <NavLink to="/staff" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
             <UserCircle className="w-3 h-3 sm:w-4 sm:h-4" />
             Staff
           </NavLink>
         </nav>
 
-        {/* STATS CARDS */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatsCard
             icon={Users}
             label="Players Online"
-            value={
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg font-semibold">{totalPlayers}</span>
-                <span className="text-xs text-muted-foreground">
-                  of {maxPlayers || '?'} max
-                </span>
-              </div>
-            }
+            value={totalPlayers}
+            subtext={`of ${maxPlayers || '?'} max`}
             variant={totalPlayers > 0 ? 'success' : 'default'}
           />
-
           <StatsCard
             icon={Activity}
             label="Server Status"
-            value={
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg font-semibold">
-                  {status === 'online'
-                    ? 'Operational'
-                    : status === 'offline'
-                    ? 'Down'
-                    : 'Checking'}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Live status
-                </span>
-              </div>
-            }
-            variant={
-              status === 'online'
-                ? 'success'
-                : status === 'offline'
-                ? 'destructive'
-                : 'warning'
-            }
+            value={status === 'online' ? 'Operational' : status === 'offline' ? 'Down' : 'Checking'}
+            variant={status === 'online' ? 'success' : status === 'offline' ? 'destructive' : 'warning'}
           />
-
           <StatsCard
             icon={Wifi}
             label="Java Edition"
-            value={
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg font-semibold">
-                  {javaStatus?.online ? 'Online' : 'Offline'}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {javaStatus?.version || 'N/A'}
-                </span>
-              </div>
-            }
+            value={javaStatus?.online ? 'Online' : 'Offline'}
+            subtext={javaStatus?.version || 'N/A'}
             variant={javaStatus?.online ? 'success' : 'destructive'}
           />
-
           <StatsCard
             icon={Clock}
             label="Bedrock Edition"
-            value={
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg font-semibold">
-                  {bedrockStatus?.online ? 'Online' : 'Offline'}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Port: 19132
-                </span>
-              </div>
-            }
+            value={bedrockStatus?.online ? 'Online' : 'Offline'}
+            subtext="Port: 19132"
             variant={bedrockStatus?.online ? 'success' : 'destructive'}
           />
         </section>
 
-        {/* SERVER CARDS */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <ServerCard
             title="Java Edition"
@@ -170,22 +114,20 @@ const Index = () => {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="flex flex-col gap-4 sm:gap-6">
             <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
-
+            
+            {/* Community Discord Card Integration */}
             <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-2">
-                Community Discord
-              </h3>
-              <iframe
-                src="https://discord.com/widget?id=1342166321756115005&theme=dark"
-                width="100%"
-                height="250"
-                allowTransparency
-                frameBorder="0"
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Community Discord</h3>
+              <iframe 
+                src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
+                width="100%" 
+                height="250" 
+                allowTransparency={true} 
+                frameBorder="0" 
                 style={{ marginTop: '15px', borderRadius: '10px' }}
-              />
+              ></iframe>
             </div>
           </div>
-
           <GameModeNav />
         </section>
 
