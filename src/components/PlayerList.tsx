@@ -7,8 +7,21 @@ interface PlayerListProps {
 }
 
 export const PlayerList = ({ javaStatus, bedrockStatus }: PlayerListProps) => {
-  const javaPlayers = javaStatus?.players?.list || [];
-  const bedrockPlayers = bedrockStatus?.players?.list || [];
+  // Handle both string arrays and object arrays for player lists
+  const extractPlayerNames = (list: unknown[] | undefined): string[] => {
+    if (!list) return [];
+    return list.map((player) => {
+      if (typeof player === 'string') return player;
+      if (typeof player === 'object' && player !== null) {
+        const playerObj = player as { name?: string; uuid?: string };
+        return playerObj.name || playerObj.uuid || 'Unknown';
+      }
+      return 'Unknown';
+    });
+  };
+
+  const javaPlayers = extractPlayerNames(javaStatus?.players?.list as unknown[] | undefined);
+  const bedrockPlayers = extractPlayerNames(bedrockStatus?.players?.list as unknown[] | undefined);
   const allPlayers = [...javaPlayers, ...bedrockPlayers];
   const totalOnline = (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
 
