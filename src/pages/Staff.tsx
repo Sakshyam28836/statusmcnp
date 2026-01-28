@@ -231,40 +231,41 @@ const Staff = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
-        <nav className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <NavLink to="/" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
-              <Home className="w-4 h-4" />
+        {/* Mobile-friendly navigation */}
+        <nav className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <NavLink to="/" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+              <Home className="w-3 h-3 sm:w-4 sm:h-4" />
               Home
             </NavLink>
-            <NavLink to="/social" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
-              <Share2 className="w-4 h-4" />
+            <NavLink to="/social" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+              <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
               Social Media
             </NavLink>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {user ? (
-              <>
-                <span className="text-muted-foreground text-sm flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  {user.email}
-                  {isAdmin && <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Admin</span>}
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <span className="text-muted-foreground text-xs sm:text-sm flex items-center gap-1 sm:gap-2 truncate max-w-[150px] sm:max-w-none">
+                  <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="truncate">{user.email}</span>
+                  {isAdmin && <span className="text-[10px] sm:text-xs bg-primary/20 text-primary px-1.5 sm:px-2 py-0.5 rounded flex-shrink-0">Admin</span>}
                 </span>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={handleLogout} className="text-xs sm:text-sm">
+                  <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Logout
                 </Button>
-              </>
+              </div>
             ) : (
               <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <LogIn className="w-4 h-4 mr-2" />
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                    <LogIn className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Admin Login
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-[90vw] sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle>{authMode === 'login' ? 'Admin Login' : 'Create Account'}</DialogTitle>
                   </DialogHeader>
@@ -293,13 +294,13 @@ const Staff = () => {
           </div>
         </nav>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Our Staff</h1>
-          <p className="text-muted-foreground">Meet the amazing team behind MCNP Network</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Our Staff</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Meet the amazing team behind MCNP Network</p>
         </div>
 
         {isAdmin && (
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <Dialog open={showStaffDialog} onOpenChange={(open) => {
               setShowStaffDialog(open);
               if (!open) {
@@ -308,16 +309,16 @@ const Staff = () => {
               }
             }}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="text-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Staff Member
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-[90vw] sm:max-w-md max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmitStaff} className="space-y-4">
+                <form onSubmit={handleSubmitStaff} className="space-y-3 sm:space-y-4">
                   <div>
                     <Label htmlFor="username">Username</Label>
                     <Input id="username" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} required />
@@ -360,68 +361,68 @@ const Staff = () => {
         )}
 
         {staffMembers.length === 0 ? (
-          <div className="minecraft-border rounded-xl bg-card p-12 text-center">
-            <User className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-bold text-foreground mb-2">No Staff Members Yet</h3>
-            <p className="text-muted-foreground">Staff information will appear here once added by an admin.</p>
+          <div className="minecraft-border rounded-xl bg-card p-8 sm:p-12 text-center">
+            <User className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">No Staff Members Yet</h3>
+            <p className="text-sm sm:text-base text-muted-foreground">Staff information will appear here once added by an admin.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {staffMembers.map((staff) => (
-              <div key={staff.id} className="minecraft-border rounded-xl bg-card p-6 relative">
+              <div key={staff.id} className="minecraft-border rounded-xl bg-card p-4 sm:p-6 relative">
                 {isAdmin && (
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <button onClick={() => handleEdit(staff)} className="p-2 bg-secondary hover:bg-secondary/80 rounded-lg transition-all">
-                      <Edit className="w-4 h-4" />
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex gap-1.5 sm:gap-2">
+                    <button onClick={() => handleEdit(staff)} className="p-1.5 sm:p-2 bg-secondary hover:bg-secondary/80 rounded-lg transition-all">
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
-                    <button onClick={() => handleDeleteStaff(staff.id)} className="p-2 bg-destructive/20 hover:bg-destructive/30 rounded-lg transition-all text-destructive">
-                      <Trash2 className="w-4 h-4" />
+                    <button onClick={() => handleDeleteStaff(staff.id)} className="p-1.5 sm:p-2 bg-destructive/20 hover:bg-destructive/30 rounded-lg transition-all text-destructive">
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 )}
                 
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <img 
                     src={`https://mc-heads.net/avatar/${staff.game_name}/64`}
                     alt={staff.game_name}
-                    className="w-16 h-16 rounded-lg"
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg"
                   />
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">{staff.username}</h3>
-                    <p className="text-primary font-medium">{staff.role}</p>
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground truncate">{staff.username}</h3>
+                    <p className="text-sm sm:text-base text-primary font-medium">{staff.role}</p>
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <p className="text-muted-foreground">
                     <span className="font-medium text-foreground">In-Game:</span> {staff.game_name}
                   </p>
                   {staff.discord_name && (
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground truncate">
                       <span className="font-medium text-foreground">Discord:</span> {staff.discord_name}
                     </p>
                   )}
                 </div>
 
                 {(staff.tiktok_url || staff.youtube_url || staff.instagram_url || staff.twitter_url) && (
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
                     {staff.youtube_url && (
-                      <a href={staff.youtube_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-all" title="YouTube">
+                      <a href={staff.youtube_url} target="_blank" rel="noopener noreferrer" className="p-1.5 sm:p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-all text-sm" title="YouTube">
                         🎬
                       </a>
                     )}
                     {staff.tiktok_url && (
-                      <a href={staff.tiktok_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg transition-all" title="TikTok">
+                      <a href={staff.tiktok_url} target="_blank" rel="noopener noreferrer" className="p-1.5 sm:p-2 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg transition-all text-sm" title="TikTok">
                         🎵
                       </a>
                     )}
                     {staff.instagram_url && (
-                      <a href={staff.instagram_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-all" title="Instagram">
+                      <a href={staff.instagram_url} target="_blank" rel="noopener noreferrer" className="p-1.5 sm:p-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-all text-sm" title="Instagram">
                         📸
                       </a>
                     )}
                     {staff.twitter_url && (
-                      <a href={staff.twitter_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition-all" title="Twitter/X">
+                      <a href={staff.twitter_url} target="_blank" rel="noopener noreferrer" className="p-1.5 sm:p-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition-all text-sm" title="Twitter/X">
                         🐦
                       </a>
                     )}
@@ -432,8 +433,8 @@ const Staff = () => {
           </div>
         )}
 
-        <footer className="text-center py-8 border-t border-border mt-8">
-          <p className="text-primary font-medium">Powered by MCNP Network</p>
+        <footer className="text-center py-6 sm:py-8 border-t border-border mt-8">
+          <p className="text-primary font-medium text-sm sm:text-base">Powered by MCNP Network</p>
           <p className="text-muted-foreground/60 text-xs mt-2">
             Made by Sakshyxm • © {new Date().getFullYear()} MCNP Network
           </p>

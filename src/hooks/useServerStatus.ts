@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
 
 const JAVA_API_URL = 'https://api.mcsrvstat.us/3/play.mcnpnetwork.com:25565';
-const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:19132';
+const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/play.mcnpnetwork.com:19132';
 
 // Local storage keys for persistent history
 const STORAGE_KEY_HISTORY = 'mcnp_uptime_history';

@@ -2,7 +2,7 @@ import { useServerStatus } from '@/hooks/useServerStatus';
 import { Header } from '@/components/Header';
 import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
-import { UptimeIndicator } from '@/components/UptimeIndicator';
+import { UptimeStats } from '@/components/UptimeStats';
 import { UptimeChart } from '@/components/UptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { DiscordWidget } from '@/components/DiscordWidget';
@@ -40,18 +40,18 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
-        <nav className="flex items-center gap-4 mb-8">
-          <NavLink to="/social" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
-            <Share2 className="w-4 h-4" />
+        <nav className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <NavLink to="/social" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+            <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
             Social Media
           </NavLink>
-          <NavLink to="/staff" className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm font-medium transition-all">
-            <UserCircle className="w-4 h-4" />
+          <NavLink to="/staff" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+            <UserCircle className="w-3 h-3 sm:w-4 sm:h-4" />
             Staff
           </NavLink>
         </nav>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatsCard
             icon={Users}
             label="Players Online"
@@ -81,7 +81,7 @@ const Index = () => {
           />
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <ServerCard
             title="Java Edition"
             serverData={javaStatus}
@@ -91,30 +91,30 @@ const Index = () => {
           <ServerCard
             title="Bedrock Edition"
             serverData={bedrockStatus}
-            serverAddress="bedrock.mcnpnetwork.com:19132"
+            serverAddress="play.mcnpnetwork.com:19132"
             isLoading={isLoading}
           />
         </section>
 
-        <section className="mb-8">
+        <section className="mb-6 sm:mb-8">
           <PlayerList javaStatus={javaStatus} bedrockStatus={bedrockStatus} />
         </section>
 
-        <section className="mb-8">
-          <UptimeIndicator uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
+        <section className="mb-6 sm:mb-8">
+          <UptimeStats uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
         </section>
 
-        <section className="mb-8">
+        <section className="mb-6 sm:mb-8">
           <UptimeChart uptimeHistory={uptimeHistory} />
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="flex flex-col gap-6">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="flex flex-col gap-4 sm:gap-6">
             <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
             
             {/* Community Discord Card Integration */}
-            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-2">Community Discord</h3>
+            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Community Discord</h3>
               <iframe 
                 src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
                 width="100%" 
@@ -128,11 +128,11 @@ const Index = () => {
           <GameModeNav />
         </section>
 
-        <footer className="text-center py-8 border-t border-border">
-          <p className="text-muted-foreground text-sm">
+        <footer className="text-center py-6 sm:py-8 border-t border-border">
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Auto-refreshes every 10 seconds • Real-time status updates
           </p>
-          <p className="text-primary font-medium mt-2">
+          <p className="text-primary font-medium mt-2 text-sm sm:text-base">
             Powered by MCNP Network
           </p>
           <p className="text-muted-foreground/60 text-xs mt-2">
