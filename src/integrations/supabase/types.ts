@@ -41,6 +41,39 @@ export type Database = {
         }
         Relationships: []
       }
+      server_status_history: {
+        Row: {
+          bedrock_online: boolean
+          created_at: string
+          id: string
+          is_online: boolean
+          java_max_players: number
+          java_players: number
+          ping_ms: number | null
+          timestamp: string
+        }
+        Insert: {
+          bedrock_online?: boolean
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          java_max_players?: number
+          java_players?: number
+          ping_ms?: number | null
+          timestamp?: string
+        }
+        Update: {
+          bedrock_online?: boolean
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          java_max_players?: number
+          java_players?: number
+          ping_ms?: number | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
       staff_members: {
         Row: {
           created_at: string
@@ -115,6 +148,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_status_history: { Args: never; Returns: undefined }
+      get_uptime_stats: {
+        Args: { hours_back?: number }
+        Returns: {
+          avg_ping: number
+          avg_players: number
+          max_players: number
+          online_checks: number
+          total_checks: number
+          uptime_percentage: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

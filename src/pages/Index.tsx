@@ -2,9 +2,10 @@ import { useServerStatus } from '@/hooks/useServerStatus';
 import { Header } from '@/components/Header';
 import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
-import { UptimeStats } from '@/components/UptimeStats';
+import { DatabaseUptimeStats } from '@/components/DatabaseUptimeStats';
 import { UptimeChart } from '@/components/UptimeChart';
 import { PlayerList } from '@/components/PlayerList';
+import { PlayerGraph } from '@/components/PlayerGraph';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { NavLink } from '@/components/NavLink';
@@ -20,6 +21,7 @@ const Index = () => {
     uptimeHistory,
     notificationsEnabled,
     enableNotifications,
+    pingMs,
     refetch 
   } = useServerStatus(10000);
 
@@ -103,9 +105,14 @@ const Index = () => {
           <PlayerList javaStatus={javaStatus} bedrockStatus={null} />
         </section>
 
-        {/* Uptime Stats */}
+        {/* Database-backed Uptime Stats with Ping */}
         <section className="mb-4 sm:mb-6 lg:mb-8">
-          <UptimeStats uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
+          <DatabaseUptimeStats isOnline={status === 'online'} currentPing={pingMs} />
+        </section>
+
+        {/* Player Count History Graph */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
+          <PlayerGraph />
         </section>
 
         {/* Uptime Chart */}
