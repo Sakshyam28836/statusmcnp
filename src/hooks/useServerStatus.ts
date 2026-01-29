@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
 
-// Using mcstatus.io API for more accurate status
-const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:25565';
-const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com:19132';
+// Using mcstatus.io API for accurate status - default ports
+const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com';
+const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com';
 
 // Local storage keys for persistent history
-const STORAGE_KEY_HISTORY = 'mcnp_uptime_history';
+const STORAGE_KEY_HISTORY = 'mcnp_uptime_history_v2';
 
 const loadStoredHistory = (): ServerHistory[] => {
   try {
@@ -36,17 +36,28 @@ const saveHistory = (history: ServerHistory[]) => {
 };
 
 // Transform mcstatus.io response to our ServerStatus format
-const transformMcStatusResponse = (data: any): ServerStatus => {
+const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
+  // Extract player names from the API response
+  const playerList: string[] = [];
+  if (data.players?.list && Array.isArray(data.players.list)) {
+    data.players.list.forEach((p: any) => {
+      const name = p.name_clean || p.name_raw || p.name || null;
+      if (name && name !== 'Anonymous Player') {
+        playerList.push(name);
+      }
+    });
+  }
+
   return {
     online: data.online === true,
     ip: data.ip_address || data.host || '',
-    port: data.port || 25565,
+    port: isBedrock ? 19132 : 25565,
     hostname: data.host,
     version: data.version?.name_clean || data.version?.name || undefined,
     players: data.online ? {
       online: data.players?.online || 0,
       max: data.players?.max || 0,
-      list: data.players?.list?.map((p: any) => p.name_clean || p.name_raw || p.uuid) || []
+      list: playerList
     } : undefined,
     motd: data.motd ? {
       raw: [data.motd.raw || ''],
@@ -105,15 +116,17 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaData = await javaResponse.json();
       const bedrockData = await bedrockResponse.json();
 
-      const transformedJava = transformMcStatusResponse(javaData);
-      const transformedBedrock = transformMcStatusResponse(bedrockData);
+      // Transform with proper flag for bedrock
+      const transformedJava = transformMcStatusResponse(javaData, false);
+      const transformedBedrock = transformMcStatusResponse(bedrockData, true);
 
       setJavaStatus(transformedJava);
       setBedrockStatus(transformedBedrock);
       
-      // Server is online if Java OR Bedrock is online
-      const isOnline = transformedJava.online || transformedBedrock.online;
-      // Only count Java players as per user request
+      // Server status is based on Java being online (primary server)
+      // Bedrock is just for display, not counted
+      const isOnline = transformedJava.online;
+      // Only count Java players
       const javaPlayers = transformedJava.players?.online || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
       

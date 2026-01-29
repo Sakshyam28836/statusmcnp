@@ -12,17 +12,21 @@ export const UptimeStats = ({ uptimeHistory, isOnline }: UptimeStatsProps) => {
   const stats = useMemo(() => {
     const now = new Date();
     
-    // Get entries for different time periods
+    // Get entries for different time periods with proper timestamp handling
     const getEntriesInPeriod = (minutes: number) => {
       const cutoff = new Date(now.getTime() - minutes * 60 * 1000);
-      return uptimeHistory.filter(entry => new Date(entry.timestamp) >= cutoff);
+      return uptimeHistory.filter(entry => {
+        const entryTime = entry.timestamp instanceof Date ? entry.timestamp : new Date(entry.timestamp);
+        return entryTime >= cutoff;
+      });
     };
     
-    // Get uptime percentage for a set of entries
+    // Get uptime percentage with more precision
     const getUptimePercent = (entries: ServerHistory[]) => {
       if (entries.length === 0) return null;
       const onlineCount = entries.filter(e => e.status === 'online').length;
-      return Math.round((onlineCount / entries.length) * 100 * 10) / 10;
+      // More accurate: use 2 decimal places
+      return Math.round((onlineCount / entries.length) * 10000) / 100;
     };
     
     // Calculate 24-hour uptime
@@ -33,26 +37,29 @@ export const UptimeStats = ({ uptimeHistory, isOnline }: UptimeStatsProps) => {
     const last30d = getEntriesInPeriod(30 * 24 * 60);
     const uptime30d = getUptimePercent(last30d);
     
-    // Recent status checks
-    const last30sec = getEntriesInPeriod(0.5); // 30 seconds
-    const last1min = getEntriesInPeriod(1);
-    const last5min = getEntriesInPeriod(5);
-    
-    // Get the most recent status
-    const lastEntry = uptimeHistory.length > 0 ? uptimeHistory[uptimeHistory.length - 1] : null;
+    // Recent status checks - more granular
+    const getRecentStatus = (secondsAgo: number) => {
+      const cutoff = new Date(now.getTime() - secondsAgo * 1000);
+      const entries = uptimeHistory.filter(entry => {
+        const entryTime = entry.timestamp instanceof Date ? entry.timestamp : new Date(entry.timestamp);
+        return entryTime >= cutoff;
+      });
+      if (entries.length === 0) return null;
+      // Return true if the most recent entry in this period was online
+      return entries[entries.length - 1]?.status === 'online';
+    };
     
     return {
       uptime24h,
       uptime30d,
       checks: {
         now: isOnline,
-        sec30: last30sec.length > 0 ? last30sec[last30sec.length - 1]?.status === 'online' : null,
-        min1: last1min.length > 0 ? last1min.every(e => e.status === 'online') : null,
-        min5: last5min.length > 0 ? last5min.every(e => e.status === 'online') : null,
+        sec30: getRecentStatus(30),
+        min1: getRecentStatus(60),
+        min5: getRecentStatus(300),
       },
       totalChecks24h: last24h.length,
       totalChecks30d: last30d.length,
-      lastCheck: lastEntry?.timestamp
     };
   }, [uptimeHistory, isOnline]);
 
