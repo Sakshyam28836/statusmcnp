@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
 
-const JAVA_API_URL = 'https://api.mcsrvstat.us/3/play.mcnpnetwork.com:25565';
-const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/play.mcnpnetwork.com:19132';
+// Using mcstatus.io API for more accurate status
+const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:25565';
+const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com:19132';
 
 // Local storage keys for persistent history
 const STORAGE_KEY_HISTORY = 'mcnp_uptime_history';
@@ -32,6 +33,29 @@ const saveHistory = (history: ServerHistory[]) => {
   } catch {
     console.log('Failed to save history');
   }
+};
+
+// Transform mcstatus.io response to our ServerStatus format
+const transformMcStatusResponse = (data: any): ServerStatus => {
+  return {
+    online: data.online === true,
+    ip: data.ip_address || data.host || '',
+    port: data.port || 25565,
+    hostname: data.host,
+    version: data.version?.name_clean || data.version?.name || undefined,
+    players: data.online ? {
+      online: data.players?.online || 0,
+      max: data.players?.max || 0,
+      list: data.players?.list?.map((p: any) => p.name_clean || p.name_raw || p.uuid) || []
+    } : undefined,
+    motd: data.motd ? {
+      raw: [data.motd.raw || ''],
+      clean: [data.motd.clean || ''],
+      html: [data.motd.html || '']
+    } : undefined,
+    icon: data.icon || undefined,
+    gamemode: data.gamemode || undefined,
+  };
 };
 
 export const useServerStatus = (refreshInterval = 10000) => {
@@ -81,11 +105,16 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaData = await javaResponse.json();
       const bedrockData = await bedrockResponse.json();
 
-      setJavaStatus(javaData);
-      setBedrockStatus(bedrockData);
+      const transformedJava = transformMcStatusResponse(javaData);
+      const transformedBedrock = transformMcStatusResponse(bedrockData);
+
+      setJavaStatus(transformedJava);
+      setBedrockStatus(transformedBedrock);
       
-      const isOnline = javaData.online || bedrockData.online;
-      const totalPlayers = (javaData.players?.online || 0) + (bedrockData.players?.online || 0);
+      // Server is online if Java OR Bedrock is online
+      const isOnline = transformedJava.online || transformedBedrock.online;
+      // Only count Java players as per user request
+      const javaPlayers = transformedJava.players?.online || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
       
       // Check for status change and send notification
@@ -101,12 +130,12 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setStatus(newStatus);
       setLastChecked(new Date());
       
-      // Update uptime history
+      // Update uptime history - only count Java players
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
           timestamp: new Date(),
           status: isOnline ? 'online' : 'offline',
-          players: totalPlayers
+          players: javaPlayers
         };
         const updated = [...prev, newEntry];
         saveHistory(updated);

@@ -23,10 +23,9 @@ const Index = () => {
     refetch 
   } = useServerStatus(10000);
 
-  const totalPlayers = 
-    (javaStatus?.players?.online || 0) + (bedrockStatus?.players?.online || 0);
-  const maxPlayers = 
-    (javaStatus?.players?.max || 0) + (bedrockStatus?.players?.max || 0);
+  // Only count Java players as per user request
+  const totalPlayers = javaStatus?.players?.online || 0;
+  const maxPlayers = javaStatus?.players?.max || 0;
 
   return (
     <div className="min-h-screen bg-background bg-grid-pattern">
@@ -39,22 +38,24 @@ const Index = () => {
         onEnableNotifications={enableNotifications}
       />
 
-      <main className="max-w-6xl mx-auto px-4 pb-12">
-        <nav className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <NavLink to="/social" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 sm:pb-12">
+        {/* Navigation Links */}
+        <nav className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
+          <NavLink to="/social" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
             <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-            Social Media
+            <span>Social Media</span>
           </NavLink>
-          <NavLink to="/staff" className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
+          <NavLink to="/staff" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all">
             <UserCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-            Staff
+            <span>Staff</span>
           </NavLink>
         </nav>
 
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        {/* Stats Cards - Responsive Grid */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
           <StatsCard
             icon={Users}
-            label="Players Online"
+            label="Java Players"
             value={totalPlayers}
             subtext={`of ${maxPlayers || '?'} max`}
             variant={totalPlayers > 0 ? 'success' : 'default'}
@@ -62,7 +63,7 @@ const Index = () => {
           <StatsCard
             icon={Activity}
             label="Server Status"
-            value={status === 'online' ? 'Operational' : status === 'offline' ? 'Down' : 'Checking'}
+            value={status === 'online' ? 'Online' : status === 'offline' ? 'Offline' : 'Checking'}
             variant={status === 'online' ? 'success' : status === 'offline' ? 'destructive' : 'warning'}
           />
           <StatsCard
@@ -81,7 +82,8 @@ const Index = () => {
           />
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {/* Server Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
           <ServerCard
             title="Java Edition"
             serverData={javaStatus}
@@ -96,46 +98,52 @@ const Index = () => {
           />
         </section>
 
-        <section className="mb-6 sm:mb-8">
-          <PlayerList javaStatus={javaStatus} bedrockStatus={bedrockStatus} />
+        {/* Player List - Only shows Java players */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
+          <PlayerList javaStatus={javaStatus} bedrockStatus={null} />
         </section>
 
-        <section className="mb-6 sm:mb-8">
+        {/* Uptime Stats */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
           <UptimeStats uptimeHistory={uptimeHistory} isOnline={status === 'online'} />
         </section>
 
-        <section className="mb-6 sm:mb-8">
+        {/* Uptime Chart */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
           <UptimeChart uptimeHistory={uptimeHistory} />
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="flex flex-col gap-4 sm:gap-6">
+        {/* Discord & Game Modes */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
             
-            {/* Community Discord Card Integration */}
-            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Community Discord</h3>
+            {/* Community Discord Card */}
+            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-3 sm:p-4 lg:p-6">
+              <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2">Community Discord</h3>
               <iframe 
                 src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
                 width="100%" 
-                height="250" 
+                height="200" 
                 allowTransparency={true} 
                 frameBorder="0" 
-                style={{ marginTop: '15px', borderRadius: '10px' }}
+                className="rounded-lg mt-2 sm:mt-3"
+                title="Discord Widget"
               ></iframe>
             </div>
           </div>
           <GameModeNav />
         </section>
 
-        <footer className="text-center py-6 sm:py-8 border-t border-border">
-          <p className="text-muted-foreground text-xs sm:text-sm">
-            Auto-refreshes every 10 seconds • Real-time status updates
+        {/* Footer */}
+        <footer className="text-center py-4 sm:py-6 lg:py-8 border-t border-border mt-4 sm:mt-6">
+          <p className="text-muted-foreground text-[10px] sm:text-xs lg:text-sm">
+            Auto-refreshes every 10 seconds • Real-time status via mcstatus.io
           </p>
-          <p className="text-primary font-medium mt-2 text-sm sm:text-base">
+          <p className="text-primary font-medium mt-1.5 sm:mt-2 text-xs sm:text-sm lg:text-base">
             Powered by MCNP Network
           </p>
-          <p className="text-muted-foreground/60 text-xs mt-2">
+          <p className="text-muted-foreground/60 text-[10px] sm:text-xs mt-1.5 sm:mt-2">
             Made by Sakshyxm • © {new Date().getFullYear()} MCNP Network
           </p>
         </footer>
