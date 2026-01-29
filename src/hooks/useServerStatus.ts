@@ -1,39 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
+import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com';
 const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com';
-
-// Local storage keys for persistent history
-const STORAGE_KEY_HISTORY = 'mcnp_uptime_history_v2';
-
-const loadStoredHistory = (): ServerHistory[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY_HISTORY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return parsed.map((entry: { timestamp: string; status: 'online' | 'offline'; players?: number }) => ({
-        ...entry,
-        timestamp: new Date(entry.timestamp)
-      }));
-    }
-  } catch {
-    console.log('No stored history found');
-  }
-  return [];
-};
-
-const saveHistory = (history: ServerHistory[]) => {
-  try {
-    // Keep last 24 hours worth of data (8640 entries at 10 second intervals)
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const filtered = history.filter(entry => entry.timestamp > cutoff);
-    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(filtered.slice(-8640)));
-  } catch {
-    console.log('Failed to save history');
-  }
-};
 
 // Transform mcstatus.io response to our ServerStatus format
 const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
@@ -76,8 +47,9 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>(loadStoredHistory);
+  const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [pingMs, setPingMs] = useState<number | null>(null);
   const previousStatus = useRef<StatusType>('checking');
   const isFirstFetch = useRef(true);
 
@@ -102,12 +74,42 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, [notificationsEnabled]);
 
+  // Save status to database
+  const saveStatusToDatabase = useCallback(async (
+    isOnline: boolean,
+    javaPlayers: number,
+    javaMaxPlayers: number,
+    bedrockOnline: boolean,
+    ping: number | null
+  ) => {
+    try {
+      await supabase
+        .from('server_status_history')
+        .insert({
+          is_online: isOnline,
+          java_players: javaPlayers,
+          java_max_players: javaMaxPlayers,
+          bedrock_online: bedrockOnline,
+          ping_ms: ping
+        });
+    } catch (err) {
+      console.error('Failed to save status to database:', err);
+    }
+  }, []);
+
   const fetchStatus = useCallback(async () => {
     try {
+      // Measure ping time
+      const startTime = performance.now();
+      
       const [javaResponse, bedrockResponse] = await Promise.all([
         fetch(JAVA_API_URL, { cache: 'no-store' }),
         fetch(BEDROCK_API_URL, { cache: 'no-store' })
       ]);
+
+      const endTime = performance.now();
+      const measuredPing = Math.round(endTime - startTime);
+      setPingMs(measuredPing);
 
       if (!javaResponse.ok || !bedrockResponse.ok) {
         throw new Error('API request failed');
@@ -124,11 +126,20 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setBedrockStatus(transformedBedrock);
       
       // Server status is based on Java being online (primary server)
-      // Bedrock is just for display, not counted
       const isOnline = transformedJava.online;
       // Only count Java players
       const javaPlayers = transformedJava.players?.online || 0;
+      const javaMaxPlayers = transformedJava.players?.max || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
+      
+      // Save to database for accurate historical tracking
+      await saveStatusToDatabase(
+        isOnline,
+        javaPlayers,
+        javaMaxPlayers,
+        transformedBedrock.online,
+        measuredPing
+      );
       
       // Check for status change and send notification
       if (!isFirstFetch.current && previousStatus.current !== 'checking' && previousStatus.current !== newStatus) {
@@ -143,15 +154,15 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setStatus(newStatus);
       setLastChecked(new Date());
       
-      // Update uptime history - only count Java players
+      // Update local uptime history for real-time display
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
           timestamp: new Date(),
           status: isOnline ? 'online' : 'offline',
           players: javaPlayers
         };
-        const updated = [...prev, newEntry];
-        saveHistory(updated);
+        // Keep only last 100 entries in memory
+        const updated = [...prev, newEntry].slice(-100);
         return updated;
       });
 
@@ -159,27 +170,20 @@ export const useServerStatus = (refreshInterval = 10000) => {
     } catch (err) {
       console.error('Failed to fetch server status:', err);
       setError('Failed to fetch server status');
+      setPingMs(null);
       
       // Don't change status on network error, keep previous
       if (isFirstFetch.current) {
         setStatus('offline');
       }
       
-      setUptimeHistory(prev => {
-        const newEntry: ServerHistory = {
-          timestamp: new Date(),
-          status: 'offline',
-          players: 0
-        };
-        const updated = [...prev, newEntry];
-        saveHistory(updated);
-        return updated;
-      });
+      // Still save failed check to database
+      await saveStatusToDatabase(false, 0, 0, false, null);
     } finally {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendNotification]);
+  }, [sendNotification, saveStatusToDatabase]);
 
   useEffect(() => {
     // Check if notifications are already granted
@@ -202,6 +206,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     uptimeHistory,
     notificationsEnabled,
     enableNotifications,
+    pingMs,
     refetch: fetchStatus
   };
 };
