@@ -15,6 +15,7 @@ interface StaffMember {
   username: string;
   game_name: string;
   discord_name: string | null;
+  email: string | null;
   profile_image_url: string | null;
   role: string;
   tiktok_url: string | null;
@@ -41,6 +42,7 @@ const Staff = () => {
     username: '',
     game_name: '',
     discord_name: '',
+    email: '',
     role: 'Staff',
     tiktok_url: '',
     youtube_url: '',
@@ -140,6 +142,7 @@ const Staff = () => {
             username: formData.username,
             game_name: formData.game_name,
             discord_name: formData.discord_name || null,
+            email: formData.email || null,
             role: formData.role,
             tiktok_url: formData.tiktok_url || null,
             youtube_url: formData.youtube_url || null,
@@ -157,6 +160,7 @@ const Staff = () => {
             username: formData.username,
             game_name: formData.game_name,
             discord_name: formData.discord_name || null,
+            email: formData.email || null,
             role: formData.role,
             tiktok_url: formData.tiktok_url || null,
             youtube_url: formData.youtube_url || null,
@@ -197,6 +201,7 @@ const Staff = () => {
       username: staff.username,
       game_name: staff.game_name,
       discord_name: staff.discord_name || '',
+      email: staff.email || '',
       role: staff.role,
       tiktok_url: staff.tiktok_url || '',
       youtube_url: staff.youtube_url || '',
@@ -211,6 +216,7 @@ const Staff = () => {
       username: '',
       game_name: '',
       discord_name: '',
+      email: '',
       role: 'Staff',
       tiktok_url: '',
       youtube_url: '',
@@ -332,6 +338,10 @@ const Staff = () => {
                     <Input id="discord_name" value={formData.discord_name} onChange={(e) => setFormData({ ...formData, discord_name: e.target.value })} />
                   </div>
                   <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="staff@mcnpnetwork.com" />
+                  </div>
+                  <div>
                     <Label htmlFor="role">Role</Label>
                     <Input id="role" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} placeholder="e.g., Admin, Moderator, Helper" />
                   </div>
@@ -400,6 +410,11 @@ const Staff = () => {
                   {staff.discord_name && (
                     <p className="text-muted-foreground truncate">
                       <span className="font-medium text-foreground">Discord:</span> {staff.discord_name}
+                    </p>
+                  )}
+                  {staff.email && isAdmin && (
+                    <p className="text-muted-foreground truncate">
+                      <span className="font-medium text-foreground">Email:</span> {staff.email}
                     </p>
                   )}
                 </div>

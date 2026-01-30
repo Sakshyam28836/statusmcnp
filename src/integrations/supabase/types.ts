@@ -79,6 +79,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           discord_name: string | null
+          email: string | null
           game_name: string
           id: string
           instagram_url: string | null
@@ -94,6 +95,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           discord_name?: string | null
+          email?: string | null
           game_name: string
           id?: string
           instagram_url?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           discord_name?: string | null
+          email?: string | null
           game_name?: string
           id?: string
           instagram_url?: string | null
@@ -149,6 +152,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_status_history: { Args: never; Returns: undefined }
+      get_nepal_time: { Args: never; Returns: string }
       get_uptime_stats: {
         Args: { hours_back?: number }
         Returns: {
@@ -167,6 +171,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_nepal_new_day: { Args: { check_time: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

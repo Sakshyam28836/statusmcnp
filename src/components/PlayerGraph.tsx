@@ -30,12 +30,17 @@ export const PlayerGraph = () => {
   const chartData = useMemo(() => {
     if (!playerHistory || playerHistory.length === 0) return [];
 
-    // Group by hour for cleaner visualization
+    // Group by hour for cleaner visualization - using Nepal timezone
     const hourlyData = new Map<string, { total: number; count: number; max: number }>();
     
     playerHistory.forEach((entry) => {
       const date = new Date(entry.timestamp);
-      const hourKey = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: true });
+      // Format in Nepal timezone
+      const hourKey = date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        hour12: true,
+        timeZone: 'Asia/Kathmandu'
+      });
       
       const existing = hourlyData.get(hourKey) || { total: 0, count: 0, max: 0 };
       hourlyData.set(hourKey, {
@@ -86,7 +91,7 @@ export const PlayerGraph = () => {
           <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Player History</h3>
-            <p className="text-xs text-muted-foreground">Last 24 hours (Java only)</p>
+            <p className="text-xs text-muted-foreground">Last 24 hours (Java only) • Nepal Time</p>
           </div>
         </div>
         
