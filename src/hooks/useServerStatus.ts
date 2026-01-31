@@ -6,6 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com';
 const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com';
 
+// Email to receive status notifications
+const NOTIFICATION_EMAIL = 'admin@mcnpnetwork.com';
+
 // Transform mcstatus.io response to our ServerStatus format
 const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
   // Extract player names from the API response
@@ -52,6 +55,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [pingMs, setPingMs] = useState<number | null>(null);
   const previousStatus = useRef<StatusType>('checking');
   const isFirstFetch = useRef(true);
+  const emailSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
 
   // Request notification permission
   const enableNotifications = useCallback(async () => {
@@ -63,8 +67,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
     return false;
   }, []);
 
-  // Send notification
-  const sendNotification = useCallback((title: string, body: string) => {
+  // Send browser notification
+  const sendBrowserNotification = useCallback((title: string, body: string) => {
     if (notificationsEnabled && 'Notification' in window) {
       new Notification(title, {
         body,
@@ -73,6 +77,44 @@ export const useServerStatus = (refreshInterval = 10000) => {
       });
     }
   }, [notificationsEnabled]);
+
+  // Send email notification via edge function
+  const sendEmailNotification = useCallback(async (
+    newStatus: 'online' | 'offline',
+    playerCount?: number
+  ) => {
+    // Prevent duplicate emails within 5 minutes
+    const now = Date.now();
+    if (
+      emailSentRef.current &&
+      emailSentRef.current.status === newStatus &&
+      now - emailSentRef.current.timestamp < 5 * 60 * 1000
+    ) {
+      console.log('Skipping duplicate email notification');
+      return;
+    }
+
+    try {
+      const response = await supabase.functions.invoke('send-status-notification', {
+        body: {
+          email: NOTIFICATION_EMAIL,
+          serverName: 'MCNP Network',
+          status: newStatus,
+          timestamp: new Date().toISOString(),
+          playerCount
+        }
+      });
+
+      if (response.error) {
+        console.error('Failed to send email notification:', response.error);
+      } else {
+        console.log('Email notification sent successfully');
+        emailSentRef.current = { status: newStatus, timestamp: now };
+      }
+    } catch (err) {
+      console.error('Error sending email notification:', err);
+    }
+  }, []);
 
   // Save status to database
   const saveStatusToDatabase = useCallback(async (
@@ -141,12 +183,16 @@ export const useServerStatus = (refreshInterval = 10000) => {
         measuredPing
       );
       
-      // Check for status change and send notification
+      // Check for status change and send notifications
       if (!isFirstFetch.current && previousStatus.current !== 'checking' && previousStatus.current !== newStatus) {
         if (newStatus === 'online') {
-          sendNotification('🟢 MCNP Network is Online!', 'The server is now online. Join now!');
+          sendBrowserNotification('🟢 MCNP Network is Online!', 'The server is now online. Join now!');
+          // Send email notification
+          sendEmailNotification('online', javaPlayers);
         } else {
-          sendNotification('🔴 MCNP Network is Offline', 'The server has gone offline.');
+          sendBrowserNotification('🔴 MCNP Network is Offline', 'The server has gone offline.');
+          // Send email notification
+          sendEmailNotification('offline');
         }
       }
       
@@ -183,7 +229,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendNotification, saveStatusToDatabase]);
+  }, [sendBrowserNotification, sendEmailNotification, saveStatusToDatabase]);
 
   useEffect(() => {
     // Check if notifications are already granted

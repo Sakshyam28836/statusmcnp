@@ -3,9 +3,11 @@ import { Header } from '@/components/Header';
 import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
 import { DatabaseUptimeStats } from '@/components/DatabaseUptimeStats';
+import { DailyUptimeHistory } from '@/components/DailyUptimeHistory';
 import { UptimeChart } from '@/components/UptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { PlayerGraph } from '@/components/PlayerGraph';
+import { DailyPlayerStats } from '@/components/DailyPlayerStats';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { NavLink } from '@/components/NavLink';
@@ -110,9 +112,19 @@ const Index = () => {
           <DatabaseUptimeStats isOnline={status === 'online'} currentPing={pingMs} />
         </section>
 
-        {/* Player Count History Graph */}
+        {/* Player Count History Graph - 24h hourly */}
         <section className="mb-4 sm:mb-6 lg:mb-8">
           <PlayerGraph />
+        </section>
+
+        {/* Daily Player Stats - 7 day breakdown */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
+          <DailyPlayerStats />
+        </section>
+
+        {/* Daily Uptime History - 7 day breakdown */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
+          <DailyUptimeHistory />
         </section>
 
         {/* Uptime Chart */}
