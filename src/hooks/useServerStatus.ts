@@ -44,6 +44,7 @@ const transformMcStatusResponse = (data: any, isBedrock: boolean = false): Serve
 };
 
 export const useServerStatus = (refreshInterval = 10000) => {
+  // All useState hooks first
   const [javaStatus, setJavaStatus] = useState<ServerStatus | null>(null);
   const [bedrockStatus, setBedrockStatus] = useState<ServerStatus | null>(null);
   const [status, setStatus] = useState<StatusType>('checking');
@@ -53,6 +54,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pingMs, setPingMs] = useState<number | null>(null);
+  
+  // All useRef hooks
   const previousStatus = useRef<StatusType>('checking');
   const isFirstFetch = useRef(true);
   const emailSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
