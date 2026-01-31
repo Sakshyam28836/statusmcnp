@@ -6,12 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com';
 const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com';
 
-// Email to receive status notifications
-const NOTIFICATION_EMAIL = 'admin@mcnpnetwork.com';
-
 // Transform mcstatus.io response to our ServerStatus format
 const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
-  // Extract player names from the API response
   const playerList: string[] = [];
   if (data.players?.list && Array.isArray(data.players.list)) {
     data.players.list.forEach((p: any) => {
@@ -44,7 +40,7 @@ const transformMcStatusResponse = (data: any, isBedrock: boolean = false): Serve
 };
 
 export const useServerStatus = (refreshInterval = 10000) => {
-  // All useState hooks first
+  // All useState hooks first - in consistent order
   const [javaStatus, setJavaStatus] = useState<ServerStatus | null>(null);
   const [bedrockStatus, setBedrockStatus] = useState<ServerStatus | null>(null);
   const [status, setStatus] = useState<StatusType>('checking');
@@ -58,21 +54,39 @@ export const useServerStatus = (refreshInterval = 10000) => {
   // All useRef hooks
   const previousStatus = useRef<StatusType>('checking');
   const isFirstFetch = useRef(true);
-  const emailSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
+  const discordSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
+  const lastStatsUpdateRef = useRef<number>(0);
 
-  // Request notification permission
+  // Request notification permission - FIXED
   const enableNotifications = useCallback(async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      setNotificationsEnabled(permission === 'granted');
-      return permission === 'granted';
+    if (!('Notification' in window)) {
+      console.log('Notifications not supported');
+      return false;
     }
-    return false;
+    
+    try {
+      const permission = await Notification.requestPermission();
+      const granted = permission === 'granted';
+      setNotificationsEnabled(granted);
+      
+      if (granted) {
+        // Show a test notification to confirm it works
+        new Notification('🔔 MCNP Alerts Enabled!', {
+          body: 'You will now receive notifications when the server status changes.',
+          icon: '/favicon.png',
+        });
+      }
+      
+      return granted;
+    } catch (err) {
+      console.error('Failed to request notification permission:', err);
+      return false;
+    }
   }, []);
 
   // Send browser notification
   const sendBrowserNotification = useCallback((title: string, body: string) => {
-    if (notificationsEnabled && 'Notification' in window) {
+    if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
       new Notification(title, {
         body,
         icon: '/favicon.png',
@@ -81,41 +95,80 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, [notificationsEnabled]);
 
-  // Send email notification via edge function
-  const sendEmailNotification = useCallback(async (
+  // Send Discord webhook notification for status change
+  const sendDiscordStatusNotification = useCallback(async (
     newStatus: 'online' | 'offline',
-    playerCount?: number
+    playerCount?: number,
+    maxPlayers?: number
   ) => {
-    // Prevent duplicate emails within 5 minutes
+    // Prevent duplicate notifications within 5 minutes
     const now = Date.now();
     if (
-      emailSentRef.current &&
-      emailSentRef.current.status === newStatus &&
-      now - emailSentRef.current.timestamp < 5 * 60 * 1000
+      discordSentRef.current &&
+      discordSentRef.current.status === newStatus &&
+      now - discordSentRef.current.timestamp < 5 * 60 * 1000
     ) {
-      console.log('Skipping duplicate email notification');
+      console.log('Skipping duplicate Discord notification');
       return;
     }
 
     try {
-      const response = await supabase.functions.invoke('send-status-notification', {
+      const response = await supabase.functions.invoke('discord-status-webhook', {
         body: {
-          email: NOTIFICATION_EMAIL,
+          type: 'status_change',
           serverName: 'MCNP Network',
           status: newStatus,
-          timestamp: new Date().toISOString(),
-          playerCount
+          playerCount,
+          maxPlayers,
+          timestamp: new Date().toISOString()
         }
       });
 
       if (response.error) {
-        console.error('Failed to send email notification:', response.error);
+        console.error('Failed to send Discord status notification:', response.error);
       } else {
-        console.log('Email notification sent successfully');
-        emailSentRef.current = { status: newStatus, timestamp: now };
+        console.log('Discord status notification sent successfully');
+        discordSentRef.current = { status: newStatus, timestamp: now };
       }
     } catch (err) {
-      console.error('Error sending email notification:', err);
+      console.error('Error sending Discord notification:', err);
+    }
+  }, []);
+
+  // Send Discord webhook for player stats (every 10 minutes)
+  const sendDiscordStatsUpdate = useCallback(async (
+    playerCount: number,
+    maxPlayers: number,
+    uptime24h?: number,
+    avgPing?: number
+  ) => {
+    const now = Date.now();
+    // Only send every 10 minutes (600000ms)
+    if (now - lastStatsUpdateRef.current < 10 * 60 * 1000) {
+      return;
+    }
+
+    try {
+      const response = await supabase.functions.invoke('discord-status-webhook', {
+        body: {
+          type: 'player_stats',
+          serverName: 'MCNP Network',
+          playerCount,
+          maxPlayers,
+          uptime24h,
+          avgPing,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      if (response.error) {
+        console.error('Failed to send Discord stats update:', response.error);
+      } else {
+        console.log('Discord stats update sent successfully');
+        lastStatsUpdateRef.current = now;
+      }
+    } catch (err) {
+      console.error('Error sending Discord stats:', err);
     }
   }, []);
 
@@ -142,9 +195,22 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
+  // Fetch uptime stats for Discord updates
+  const fetchUptimeStats = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_uptime_stats', { hours_back: 24 });
+      if (error || !data || data.length === 0) return null;
+      return {
+        uptime: Number(data[0].uptime_percentage),
+        avgPing: data[0].avg_ping ? Number(data[0].avg_ping) : undefined
+      };
+    } catch {
+      return null;
+    }
+  }, []);
+
   const fetchStatus = useCallback(async () => {
     try {
-      // Measure ping time
       const startTime = performance.now();
       
       const [javaResponse, bedrockResponse] = await Promise.all([
@@ -163,21 +229,18 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaData = await javaResponse.json();
       const bedrockData = await bedrockResponse.json();
 
-      // Transform with proper flag for bedrock
       const transformedJava = transformMcStatusResponse(javaData, false);
       const transformedBedrock = transformMcStatusResponse(bedrockData, true);
 
       setJavaStatus(transformedJava);
       setBedrockStatus(transformedBedrock);
       
-      // Server status is based on Java being online (primary server)
       const isOnline = transformedJava.online;
-      // Only count Java players
       const javaPlayers = transformedJava.players?.online || 0;
       const javaMaxPlayers = transformedJava.players?.max || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
       
-      // Save to database for accurate historical tracking
+      // Save to database
       await saveStatusToDatabase(
         isOnline,
         javaPlayers,
@@ -188,29 +251,43 @@ export const useServerStatus = (refreshInterval = 10000) => {
       
       // Check for status change and send notifications
       if (!isFirstFetch.current && previousStatus.current !== 'checking' && previousStatus.current !== newStatus) {
+        // Browser notification
         if (newStatus === 'online') {
           sendBrowserNotification('🟢 MCNP Network is Online!', 'The server is now online. Join now!');
-          // Send email notification
-          sendEmailNotification('online', javaPlayers);
         } else {
           sendBrowserNotification('🔴 MCNP Network is Offline', 'The server has gone offline.');
-          // Send email notification
-          sendEmailNotification('offline');
         }
+        
+        // Discord webhook notification
+        sendDiscordStatusNotification(
+          newStatus === 'online' ? 'online' : 'offline',
+          javaPlayers,
+          javaMaxPlayers
+        );
+      }
+      
+      // Send Discord stats update every 10 minutes (only when online)
+      if (isOnline) {
+        const stats = await fetchUptimeStats();
+        sendDiscordStatsUpdate(
+          javaPlayers,
+          javaMaxPlayers,
+          stats?.uptime,
+          stats?.avgPing
+        );
       }
       
       previousStatus.current = newStatus;
       setStatus(newStatus);
       setLastChecked(new Date());
       
-      // Update local uptime history for real-time display
+      // Update local uptime history
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
           timestamp: new Date(),
           status: isOnline ? 'online' : 'offline',
           players: javaPlayers
         };
-        // Keep only last 100 entries in memory
         const updated = [...prev, newEntry].slice(-100);
         return updated;
       });
@@ -221,18 +298,16 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setError('Failed to fetch server status');
       setPingMs(null);
       
-      // Don't change status on network error, keep previous
       if (isFirstFetch.current) {
         setStatus('offline');
       }
       
-      // Still save failed check to database
       await saveStatusToDatabase(false, 0, 0, false, null);
     } finally {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendEmailNotification, saveStatusToDatabase]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, saveStatusToDatabase, fetchUptimeStats]);
 
   useEffect(() => {
     // Check if notifications are already granted
