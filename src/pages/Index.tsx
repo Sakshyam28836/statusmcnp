@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
 import { DatabaseUptimeStats } from '@/components/DatabaseUptimeStats';
-import { DailyUptimeHistory } from '@/components/DailyUptimeHistory';
 import { UptimeChart } from '@/components/UptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { PlayerGraph } from '@/components/PlayerGraph';
@@ -120,11 +119,6 @@ const Index = () => {
         {/* Daily Player Stats - 7 day breakdown */}
         <section className="mb-4 sm:mb-6 lg:mb-8">
           <DailyPlayerStats />
-        </section>
-
-        {/* Daily Uptime History - 7 day breakdown */}
-        <section className="mb-4 sm:mb-6 lg:mb-8">
-          <DailyUptimeHistory />
         </section>
 
         {/* Uptime Chart */}

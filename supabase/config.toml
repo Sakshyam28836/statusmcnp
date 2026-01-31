@@ -2,3 +2,6 @@ project_id = "jrlkckjoczdupitclsyb"
 
 [functions.send-status-notification]
 verify_jwt = false
+
+[functions.discord-status-webhook]
+verify_jwt = false
