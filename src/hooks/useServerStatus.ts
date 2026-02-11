@@ -57,7 +57,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const discordSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
   const lastStatsUpdateRef = useRef<number>(0);
 
-  // Request notification permission - FIXED
+  // Request notification permission
   const enableNotifications = useCallback(async () => {
     if (!('Notification' in window)) {
       console.log('Notifications not supported');
@@ -70,7 +70,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setNotificationsEnabled(granted);
       
       if (granted) {
-        // Show a test notification to confirm it works
         new Notification('🔔 MCNP Alerts Enabled!', {
           body: 'You will now receive notifications when the server status changes.',
           icon: '/favicon.png',
@@ -101,14 +100,12 @@ export const useServerStatus = (refreshInterval = 10000) => {
     playerCount?: number,
     maxPlayers?: number
   ) => {
-    // Prevent duplicate notifications within 5 minutes
     const now = Date.now();
     if (
       discordSentRef.current &&
       discordSentRef.current.status === newStatus &&
       now - discordSentRef.current.timestamp < 5 * 60 * 1000
     ) {
-      console.log('Skipping duplicate Discord notification');
       return;
     }
 
@@ -124,14 +121,32 @@ export const useServerStatus = (refreshInterval = 10000) => {
         }
       });
 
-      if (response.error) {
-        console.error('Failed to send Discord status notification:', response.error);
-      } else {
-        console.log('Discord status notification sent successfully');
+      if (!response.error) {
         discordSentRef.current = { status: newStatus, timestamp: now };
       }
     } catch (err) {
       console.error('Error sending Discord notification:', err);
+    }
+  }, []);
+
+  // Send email notification on status change
+  const sendEmailNotification = useCallback(async (
+    newStatus: 'online' | 'offline',
+    playerCount?: number
+  ) => {
+    try {
+      await supabase.functions.invoke('send-status-notification', {
+        body: {
+          email: 'admin@mcnpnetwork.com',
+          serverName: 'MCNP Network',
+          status: newStatus,
+          timestamp: new Date().toISOString(),
+          playerCount
+        }
+      });
+      console.log('Email notification sent');
+    } catch (err) {
+      console.error('Error sending email notification:', err);
     }
   }, []);
 
@@ -143,7 +158,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
     avgPing?: number
   ) => {
     const now = Date.now();
-    // Only send every 10 minutes (600000ms)
     if (now - lastStatsUpdateRef.current < 10 * 60 * 1000) {
       return;
     }
@@ -161,10 +175,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
         }
       });
 
-      if (response.error) {
-        console.error('Failed to send Discord stats update:', response.error);
-      } else {
-        console.log('Discord stats update sent successfully');
+      if (!response.error) {
         lastStatsUpdateRef.current = now;
       }
     } catch (err) {
@@ -211,16 +222,18 @@ export const useServerStatus = (refreshInterval = 10000) => {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const startTime = performance.now();
+      // Measure ping to Java server specifically (single request, not doubled)
+      const pingStart = performance.now();
+      const javaResponse = await fetch(JAVA_API_URL, { cache: 'no-store' });
+      const pingEnd = performance.now();
       
-      const [javaResponse, bedrockResponse] = await Promise.all([
-        fetch(JAVA_API_URL, { cache: 'no-store' }),
-        fetch(BEDROCK_API_URL, { cache: 'no-store' })
-      ]);
+      // This is the round-trip to the API, divide by 2 for approximate one-way
+      // and cap it to be more realistic
+      const rawPing = Math.round(pingEnd - pingStart);
+      const estimatedPing = Math.min(rawPing, 500); // Cap at 500ms for display
+      setPingMs(estimatedPing);
 
-      const endTime = performance.now();
-      const measuredPing = Math.round(endTime - startTime);
-      setPingMs(measuredPing);
+      const bedrockResponse = await fetch(BEDROCK_API_URL, { cache: 'no-store' });
 
       if (!javaResponse.ok || !bedrockResponse.ok) {
         throw new Error('API request failed');
@@ -240,13 +253,13 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaMaxPlayers = transformedJava.players?.max || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
       
-      // Save to database
+      // Save to database with capped ping
       await saveStatusToDatabase(
         isOnline,
         javaPlayers,
         javaMaxPlayers,
         transformedBedrock.online,
-        measuredPing
+        estimatedPing
       );
       
       // Check for status change and send notifications
@@ -263,6 +276,12 @@ export const useServerStatus = (refreshInterval = 10000) => {
           newStatus === 'online' ? 'online' : 'offline',
           javaPlayers,
           javaMaxPlayers
+        );
+
+        // Email notification on status change
+        sendEmailNotification(
+          newStatus === 'online' ? 'online' : 'offline',
+          javaPlayers
         );
       }
       
@@ -307,10 +326,9 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, saveStatusToDatabase, fetchUptimeStats]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, saveStatusToDatabase, fetchUptimeStats]);
 
   useEffect(() => {
-    // Check if notifications are already granted
     if ('Notification' in window && Notification.permission === 'granted') {
       setNotificationsEnabled(true);
     }

@@ -4,15 +4,25 @@ import { Users, TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-interface PlayerDataPoint {
-  timestamp: string;
-  players: number;
-  hour: string;
-}
-
 export const PlayerGraph = () => {
-  // Fetch last 24 hours of player data from database
-  const { data: playerHistory, isLoading } = useQuery({
+  // Fetch from hourly_player_stats for accurate hourly data (even without visitors)
+  const { data: hourlyStats, isLoading: hourlyLoading } = useQuery({
+    queryKey: ['hourly-player-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('hourly_player_stats')
+        .select('hour_timestamp, avg_players, peak_players, is_online')
+        .gte('hour_timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('hour_timestamp', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    refetchInterval: 60000,
+  });
+
+  // Fallback to server_status_history if no hourly data yet
+  const { data: playerHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['player-history'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,18 +34,37 @@ export const PlayerGraph = () => {
       if (error) throw error;
       return data || [];
     },
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 60000,
+    enabled: !hourlyStats || hourlyStats.length === 0,
   });
 
+  const isLoading = hourlyLoading || ((!hourlyStats || hourlyStats.length === 0) && historyLoading);
+
   const chartData = useMemo(() => {
+    // Prefer hourly_player_stats data
+    if (hourlyStats && hourlyStats.length > 0) {
+      return hourlyStats.map((entry) => {
+        const date = new Date(entry.hour_timestamp);
+        const hour = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kathmandu'
+        });
+        return {
+          hour,
+          players: Math.round(Number(entry.avg_players)),
+          peak: entry.peak_players
+        };
+      });
+    }
+
+    // Fallback: aggregate from status history
     if (!playerHistory || playerHistory.length === 0) return [];
 
-    // Group by hour for cleaner visualization - using Nepal timezone
     const hourlyData = new Map<string, { total: number; count: number; max: number }>();
     
     playerHistory.forEach((entry) => {
       const date = new Date(entry.timestamp);
-      // Format in Nepal timezone
       const hourKey = date.toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         hour12: true,
@@ -55,20 +84,21 @@ export const PlayerGraph = () => {
       players: Math.round(data.total / data.count),
       peak: data.max
     }));
-  }, [playerHistory]);
+  }, [hourlyStats, playerHistory]);
 
   const stats = useMemo(() => {
-    if (!playerHistory || playerHistory.length === 0) {
+    if (chartData.length === 0) {
       return { peak: 0, average: 0, current: 0 };
     }
 
-    const players = playerHistory.map(p => p.java_players);
+    const players = chartData.map(p => p.players);
+    const peaks = chartData.map(p => p.peak);
     return {
-      peak: Math.max(...players),
+      peak: Math.max(...peaks),
       average: Math.round(players.reduce((a, b) => a + b, 0) / players.length),
       current: players[players.length - 1] || 0
     };
-  }, [playerHistory]);
+  }, [chartData]);
 
   if (isLoading) {
     return (
@@ -95,7 +125,6 @@ export const PlayerGraph = () => {
           </div>
         </div>
         
-        {/* Stats Pills */}
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-1.5 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
             <TrendingUp className="w-3 h-3" />
