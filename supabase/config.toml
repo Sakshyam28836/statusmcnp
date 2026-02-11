@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.discord-status-webhook]
 verify_jwt = false
+
+[functions.server-monitor]
+verify_jwt = false

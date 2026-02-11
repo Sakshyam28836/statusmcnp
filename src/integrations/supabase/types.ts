@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_uptime_records: {
+        Row: {
+          avg_ping: number | null
+          avg_players: number
+          created_at: string
+          date: string
+          id: string
+          online_checks: number
+          peak_players: number
+          total_checks: number
+          uptime_percentage: number
+        }
+        Insert: {
+          avg_ping?: number | null
+          avg_players?: number
+          created_at?: string
+          date: string
+          id?: string
+          online_checks?: number
+          peak_players?: number
+          total_checks?: number
+          uptime_percentage?: number
+        }
+        Update: {
+          avg_ping?: number | null
+          avg_players?: number
+          created_at?: string
+          date?: string
+          id?: string
+          online_checks?: number
+          peak_players?: number
+          total_checks?: number
+          uptime_percentage?: number
+        }
+        Relationships: []
+      }
+      hourly_player_stats: {
+        Row: {
+          avg_players: number
+          created_at: string
+          hour_timestamp: string
+          id: string
+          is_online: boolean
+          min_players: number
+          peak_players: number
+        }
+        Insert: {
+          avg_players?: number
+          created_at?: string
+          hour_timestamp: string
+          id?: string
+          is_online?: boolean
+          min_players?: number
+          peak_players?: number
+        }
+        Update: {
+          avg_players?: number
+          created_at?: string
+          hour_timestamp?: string
+          id?: string
+          is_online?: boolean
+          min_players?: number
+          peak_players?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -151,6 +217,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aggregate_daily_uptime: { Args: never; Returns: undefined }
+      aggregate_today_uptime: { Args: never; Returns: undefined }
       cleanup_old_status_history: { Args: never; Returns: undefined }
       get_nepal_time: { Args: never; Returns: string }
       get_uptime_stats: {

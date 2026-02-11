@@ -13,14 +13,12 @@ interface DatabaseUptimeStatsProps {
 interface UptimeData {
   period: string;
   label: string;
-  hours: number;
   uptime: number | null;
   checks: number;
   avgPlayers: number;
   avgPing: number | null;
 }
 
-// Nepal timezone offset: UTC+5:45
 const getNepalTime = () => {
   return new Date().toLocaleString('en-US', { 
     timeZone: 'Asia/Kathmandu',
@@ -40,50 +38,106 @@ const getNepalDate = () => {
 };
 
 export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeStatsProps) => {
-  // Fetch uptime stats for different periods
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['uptime-stats'],
+  // Fetch 24h stats from RPC (real-time)
+  const { data: dailyStats } = useQuery({
+    queryKey: ['uptime-stats-24h'],
     queryFn: async () => {
-      const periods = [
-        { name: '24h', label: 'Daily (24h)', hours: 24 },
-        { name: '7d', label: 'Weekly (7d)', hours: 168 },
-        { name: '30d', label: 'Monthly (30d)', hours: 720 },
-      ];
+      const { data, error } = await supabase.rpc('get_uptime_stats', { hours_back: 24 });
+      if (error || !data || data.length === 0) return null;
+      return data[0];
+    },
+    refetchInterval: 30000,
+  });
 
-      const results: UptimeData[] = [];
+  // Fetch daily_uptime_records for accurate weekly and monthly stats
+  const { data: dailyRecords } = useQuery({
+    queryKey: ['daily-uptime-records'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('daily_uptime_records')
+        .select('*')
+        .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('date', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    refetchInterval: 60000,
+  });
 
-      for (const period of periods) {
-        const { data, error } = await supabase
-          .rpc('get_uptime_stats', { hours_back: period.hours });
+  // Also trigger today's aggregation
+  useQuery({
+    queryKey: ['aggregate-today'],
+    queryFn: async () => {
+      await supabase.rpc('aggregate_today_uptime');
+      return true;
+    },
+    refetchInterval: 300000, // Every 5 minutes
+  });
 
-        if (error) {
-          console.error('Error fetching uptime stats:', error);
-          results.push({
-            period: period.name,
-            label: period.label,
-            hours: period.hours,
-            uptime: null,
-            checks: 0,
-            avgPlayers: 0,
-            avgPing: null
-          });
-        } else if (data && data.length > 0) {
-          results.push({
-            period: period.name,
-            label: period.label,
-            hours: period.hours,
-            uptime: Number(data[0].uptime_percentage),
-            checks: Number(data[0].total_checks),
-            avgPlayers: Number(data[0].avg_players) || 0,
-            avgPing: data[0].avg_ping ? Number(data[0].avg_ping) : null
-          });
-        }
+  const stats = useMemo((): UptimeData[] => {
+    const results: UptimeData[] = [];
+
+    // 24h from real-time RPC
+    results.push({
+      period: '24h',
+      label: 'Daily (24h)',
+      uptime: dailyStats ? Number(dailyStats.uptime_percentage) : null,
+      checks: dailyStats ? Number(dailyStats.total_checks) : 0,
+      avgPlayers: dailyStats ? Number(dailyStats.avg_players) : 0,
+      avgPing: dailyStats?.avg_ping ? Number(dailyStats.avg_ping) : null,
+    });
+
+    // Weekly from daily records (last 7 days)
+    if (dailyRecords && dailyRecords.length > 0) {
+      const last7Days = dailyRecords.filter(r => {
+        const d = new Date(r.date);
+        return d >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      });
+
+      if (last7Days.length > 0) {
+        const totalChecks = last7Days.reduce((s, r) => s + r.total_checks, 0);
+        const onlineChecks = last7Days.reduce((s, r) => s + r.online_checks, 0);
+        const uptime = totalChecks > 0 ? Math.round((onlineChecks / totalChecks) * 10000) / 100 : null;
+        const avgPlayers = Math.round(last7Days.reduce((s, r) => s + Number(r.avg_players), 0) / last7Days.length * 10) / 10;
+        const avgPings = last7Days.filter(r => r.avg_ping != null).map(r => r.avg_ping!);
+        const avgPing = avgPings.length > 0 ? Math.round(avgPings.reduce((a, b) => a + b, 0) / avgPings.length) : null;
+
+        results.push({
+          period: '7d',
+          label: 'Weekly (7d)',
+          uptime,
+          checks: totalChecks,
+          avgPlayers,
+          avgPing,
+        });
+      } else {
+        results.push({ period: '7d', label: 'Weekly (7d)', uptime: null, checks: 0, avgPlayers: 0, avgPing: null });
       }
 
-      return results;
-    },
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
+      // Monthly from daily records (last 30 days)
+      const totalChecks = dailyRecords.reduce((s, r) => s + r.total_checks, 0);
+      const onlineChecks = dailyRecords.reduce((s, r) => s + r.online_checks, 0);
+      const uptime30 = totalChecks > 0 ? Math.round((onlineChecks / totalChecks) * 10000) / 100 : null;
+      const avgPlayers30 = Math.round(dailyRecords.reduce((s, r) => s + Number(r.avg_players), 0) / dailyRecords.length * 10) / 10;
+      const avgPings30 = dailyRecords.filter(r => r.avg_ping != null).map(r => r.avg_ping!);
+      const avgPing30 = avgPings30.length > 0 ? Math.round(avgPings30.reduce((a, b) => a + b, 0) / avgPings30.length) : null;
+
+      results.push({
+        period: '30d',
+        label: 'Monthly (30d)',
+        uptime: uptime30,
+        checks: totalChecks,
+        avgPlayers: avgPlayers30,
+        avgPing: avgPing30,
+      });
+    } else {
+      results.push({ period: '7d', label: 'Weekly (7d)', uptime: null, checks: 0, avgPlayers: 0, avgPing: null });
+      results.push({ period: '30d', label: 'Monthly (30d)', uptime: null, checks: 0, avgPlayers: 0, avgPing: null });
+    }
+
+    return results;
+  }, [dailyStats, dailyRecords]);
 
   // Fetch recent status for the timeline
   const { data: recentChecks } = useQuery({
@@ -138,6 +192,8 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
     return status ? 'bg-success' : 'bg-destructive';
   };
 
+  const isLoading = !dailyStats;
+
   return (
     <div className="minecraft-border rounded-xl bg-card p-4 sm:p-6 card-glow">
       {/* Header with Nepal Time */}
@@ -150,7 +206,6 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
           </div>
         </div>
         
-        {/* Nepal Time Display */}
         <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
           <Globe className="w-4 h-4 text-primary" />
           <div className="text-xs">
@@ -160,12 +215,12 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
         </div>
       </div>
 
-      {/* Ping Indicator - Prominent Position */}
+      {/* Ping Indicator */}
       <div className="mb-4 sm:mb-6">
         <PingIndicator pingMs={currentPing} isOnline={isOnline} />
       </div>
 
-      {/* Main Uptime Stats Grid - Enhanced */}
+      {/* Main Uptime Stats Grid */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
         {isLoading ? (
           <>
@@ -177,7 +232,7 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
             ))}
           </>
         ) : (
-          stats?.map((stat) => (
+          stats.map((stat) => (
             <div key={stat.period} className="bg-secondary/50 rounded-lg p-2 sm:p-4 text-center border border-border/50">
               <Clock className="w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-1 text-muted-foreground" />
               <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1 font-medium">
@@ -199,8 +254,8 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
         )}
       </div>
 
-      {/* Additional Stats - Average Players & Ping */}
-      {stats && stats.length > 0 && (
+      {/* Additional Stats */}
+      {stats.length > 0 && stats[0].uptime !== null && (
         <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-2 bg-secondary/30 rounded-lg p-2 sm:p-3 border border-border/30">
             <Users className="w-4 h-4 text-primary" />
