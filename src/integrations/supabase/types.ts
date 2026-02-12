@@ -220,6 +220,14 @@ export type Database = {
       aggregate_daily_uptime: { Args: never; Returns: undefined }
       aggregate_today_uptime: { Args: never; Returns: undefined }
       cleanup_old_status_history: { Args: never; Returns: undefined }
+      get_hourly_player_stats: {
+        Args: { hours_back?: number }
+        Returns: {
+          avg_players: number
+          hour_label: string
+          peak_players: number
+        }[]
+      }
       get_nepal_time: { Args: never; Returns: string }
       get_uptime_stats: {
         Args: { hours_back?: number }

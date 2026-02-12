@@ -5,98 +5,68 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export const PlayerGraph = () => {
-  // Fetch from hourly_player_stats for accurate hourly data (even without visitors)
-  const { data: hourlyStats, isLoading: hourlyLoading } = useQuery({
-    queryKey: ['hourly-player-stats'],
+  // Use RPC function for accurate hourly data aggregated in Nepal time
+  const { data: chartData, isLoading } = useQuery({
+    queryKey: ['hourly-player-graph'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('hourly_player_stats')
-        .select('hour_timestamp, avg_players, peak_players, is_online')
-        .gte('hour_timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('hour_timestamp', { ascending: true });
+      // Use RPC for accurate server-side aggregation in Nepal time
+      // This works even without visitors since cron records data every minute
+      const { data, error } = await supabase.rpc('get_hourly_player_stats' as any, { hours_back: 24 });
       
-      if (error) throw error;
-      return data || [];
-    },
-    refetchInterval: 60000,
-  });
-
-  // Fallback to server_status_history if no hourly data yet
-  const { data: playerHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['player-history'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('server_status_history')
-        .select('timestamp, java_players')
-        .gte('timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('timestamp', { ascending: true });
-      
-      if (error) throw error;
-      return data || [];
-    },
-    refetchInterval: 60000,
-    enabled: !hourlyStats || hourlyStats.length === 0,
-  });
-
-  const isLoading = hourlyLoading || ((!hourlyStats || hourlyStats.length === 0) && historyLoading);
-
-  const chartData = useMemo(() => {
-    // Prefer hourly_player_stats data
-    if (hourlyStats && hourlyStats.length > 0) {
-      return hourlyStats.map((entry) => {
-        const date = new Date(entry.hour_timestamp);
-        const hour = date.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          hour12: true,
-          timeZone: 'Asia/Kathmandu'
+      if (error) {
+        console.error('Error fetching hourly stats:', error);
+        // Fallback to raw history
+        const { data: fallback, error: fbErr } = await supabase
+          .from('server_status_history')
+          .select('timestamp, java_players')
+          .gte('timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .eq('is_online', true)
+          .order('timestamp', { ascending: true });
+        
+        if (fbErr || !fallback || fallback.length === 0) return [];
+        
+        // Aggregate by hour in Nepal time
+        const hourlyMap = new Map<string, { total: number; count: number; max: number }>();
+        fallback.forEach((entry: any) => {
+          const hourKey = new Date(entry.timestamp).toLocaleTimeString('en-US', {
+            hour: '2-digit', hour12: true, timeZone: 'Asia/Kathmandu'
+          });
+          const existing = hourlyMap.get(hourKey) || { total: 0, count: 0, max: 0 };
+          hourlyMap.set(hourKey, {
+            total: existing.total + entry.java_players,
+            count: existing.count + 1,
+            max: Math.max(existing.max, entry.java_players)
+          });
         });
-        return {
+        
+        return Array.from(hourlyMap.entries()).map(([hour, d]) => ({
           hour,
-          players: Math.round(Number(entry.avg_players)),
-          peak: entry.peak_players
-        };
-      });
-    }
-
-    // Fallback: aggregate from status history
-    if (!playerHistory || playerHistory.length === 0) return [];
-
-    const hourlyData = new Map<string, { total: number; count: number; max: number }>();
-    
-    playerHistory.forEach((entry) => {
-      const date = new Date(entry.timestamp);
-      const hourKey = date.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        hour12: true,
-        timeZone: 'Asia/Kathmandu'
-      });
+          players: Math.round(d.total / d.count),
+          peak: d.max
+        }));
+      }
       
-      const existing = hourlyData.get(hourKey) || { total: 0, count: 0, max: 0 };
-      hourlyData.set(hourKey, {
-        total: existing.total + entry.java_players,
-        count: existing.count + 1,
-        max: Math.max(existing.max, entry.java_players)
-      });
-    });
-
-    return Array.from(hourlyData.entries()).map(([hour, data]) => ({
-      hour,
-      players: Math.round(data.total / data.count),
-      peak: data.max
-    }));
-  }, [hourlyStats, playerHistory]);
+      if (!data || data.length === 0) return [];
+      
+      return (data as any[]).map((entry) => ({
+        hour: entry.hour_label,
+        players: entry.avg_players,
+        peak: entry.peak_players
+      }));
+    },
+    refetchInterval: 60000,
+  });
 
   const stats = useMemo(() => {
-    if (chartData.length === 0) {
-      return { peak: 0, average: 0, current: 0 };
+    if (!chartData || chartData.length === 0) {
+      return { peak: 0, average: 0 };
     }
 
-    const players = chartData.map(p => p.players);
-    const peaks = chartData.map(p => p.peak);
+    const players = chartData.map((p: any) => p.players);
+    const peaks = chartData.map((p: any) => p.peak);
     return {
       peak: Math.max(...peaks),
-      average: Math.round(players.reduce((a, b) => a + b, 0) / players.length),
-      current: players[players.length - 1] || 0
+      average: Math.round(players.reduce((a: number, b: number) => a + b, 0) / players.length),
     };
   }, [chartData]);
 
@@ -121,7 +91,7 @@ export const PlayerGraph = () => {
           <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Player History</h3>
-            <p className="text-xs text-muted-foreground">Last 24 hours (Java only) • Nepal Time</p>
+            <p className="text-xs text-muted-foreground">Last 24 hours (Java) • Nepal Time • Updates every minute</p>
           </div>
         </div>
         
@@ -136,7 +106,7 @@ export const PlayerGraph = () => {
         </div>
       </div>
 
-      {chartData.length > 0 ? (
+      {chartData && chartData.length > 0 ? (
         <div className="h-48 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -152,6 +122,7 @@ export const PlayerGraph = () => {
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
@@ -190,7 +161,7 @@ export const PlayerGraph = () => {
         </div>
       ) : (
         <div className="h-48 sm:h-64 flex items-center justify-center text-muted-foreground">
-          <p className="text-sm">No player data available yet. Check back soon!</p>
+          <p className="text-sm">No player data available yet. Data records every minute automatically.</p>
         </div>
       )}
     </div>
