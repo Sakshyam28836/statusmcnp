@@ -226,7 +226,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         // Get current server status
-        const javaRes = await fetch("https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109");
+        const javaRes = await fetch(JAVA_API_URL);
         const javaData = await javaRes.json();
 
         const embed = {
@@ -241,7 +241,7 @@ const handler = async (req: Request): Promise<Response> => {
             { name: "🏆 Peak Players (24h)", value: `${stats.max_players}`, inline: true },
             { name: "🕐 Time (Nepal)", value: nepalTime, inline: true },
           ],
-          footer: { text: "MCNP Network • Updates every 10 minutes" },
+          footer: { text: "MCNP Network • Updates every 5 minutes" },
           timestamp: new Date().toISOString(),
         };
 
