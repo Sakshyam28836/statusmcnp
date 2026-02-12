@@ -104,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
           }
         ],
         footer: {
-          text: "MCNP Network • Updates every 10 minutes"
+          text: "MCNP Network • Updates every 5 minutes"
         },
         timestamp: new Date().toISOString()
       };

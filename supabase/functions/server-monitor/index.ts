@@ -7,8 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const JAVA_API_URL = "https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com";
-const BEDROCK_API_URL = "https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com";
+const JAVA_API_URL = "https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109";
+const BEDROCK_API_URL = "https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnpnetwork.com:1109";
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -155,17 +155,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (action === "aggregate_hourly") {
       // Aggregate the last hour's data into hourly_player_stats
+      // Use Nepal time (UTC+5:45) for hour boundaries
       const now = new Date();
-      const hourStart = new Date(now);
-      hourStart.setMinutes(0, 0, 0);
-      const hourEnd = new Date(hourStart);
-      hourEnd.setHours(hourEnd.getHours() + 1);
+      const nepalOffset = 5 * 60 + 45; // minutes
+      const nepalMs = now.getTime() + nepalOffset * 60 * 1000;
+      const nepalNow = new Date(nepalMs);
+      
+      // Round down to current hour in Nepal time
+      const nepalHourStart = new Date(nepalNow);
+      nepalHourStart.setMinutes(0, 0, 0);
+      
+      // Convert back to UTC for DB query
+      const utcHourStart = new Date(nepalHourStart.getTime() - nepalOffset * 60 * 1000);
+      const utcHourEnd = new Date(utcHourStart.getTime() + 60 * 60 * 1000);
 
       const { data: hourData } = await supabase
         .from("server_status_history")
         .select("java_players, is_online")
-        .gte("timestamp", hourStart.toISOString())
-        .lt("timestamp", hourEnd.toISOString());
+        .gte("timestamp", utcHourStart.toISOString())
+        .lt("timestamp", utcHourEnd.toISOString());
 
       if (hourData && hourData.length > 0) {
         const players = hourData.map((d) => d.java_players);
@@ -174,10 +182,10 @@ const handler = async (req: Request): Promise<Response> => {
         const minPlayers = Math.min(...players);
         const wasOnline = hourData.some((d) => d.is_online);
 
-        // Upsert to avoid duplicates
+        // Store with the UTC equivalent of the Nepal hour start
         await supabase.from("hourly_player_stats").upsert(
           {
-            hour_timestamp: hourStart.toISOString(),
+            hour_timestamp: utcHourStart.toISOString(),
             avg_players: avgPlayers,
             peak_players: peakPlayers,
             min_players: minPlayers,
@@ -218,7 +226,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         // Get current server status
-        const javaRes = await fetch(JAVA_API_URL);
+        const javaRes = await fetch("https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109");
         const javaData = await javaRes.json();
 
         const embed = {

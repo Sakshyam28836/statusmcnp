@@ -3,8 +3,8 @@ import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
 import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
-const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com';
-const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/play.mcnpnetwork.com';
+const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109';
+const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnpnetwork.com:1109';
 
 // Transform mcstatus.io response to our ServerStatus format
 const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
@@ -21,7 +21,7 @@ const transformMcStatusResponse = (data: any, isBedrock: boolean = false): Serve
   return {
     online: data.online === true,
     ip: data.ip_address || data.host || '',
-    port: isBedrock ? 19132 : 25565,
+    port: 1109,
     hostname: data.host,
     version: data.version?.name_clean || data.version?.name || undefined,
     players: data.online ? {
@@ -158,7 +158,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     avgPing?: number
   ) => {
     const now = Date.now();
-    if (now - lastStatsUpdateRef.current < 10 * 60 * 1000) {
+    if (now - lastStatsUpdateRef.current < 5 * 60 * 1000) {
       return;
     }
 
