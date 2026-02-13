@@ -8,7 +8,8 @@ const corsHeaders = {
 };
 
 const JAVA_API_URL = "https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109";
-const BEDROCK_API_URL = "https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnpnetwork.com:1109";
+// Use mcsrvstat.us for Bedrock - more reliable for Bedrock edition
+const BEDROCK_API_URL = "https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:1109";
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -21,26 +22,28 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const action = body.action || "check"; // "check" | "aggregate_daily" | "aggregate_hourly"
+    const action = body.action || "check";
 
     if (action === "check") {
-      // Fetch server status from mcstatus.io
-      const [javaRes, bedrockRes] = await Promise.all([
-        fetch(JAVA_API_URL),
-        fetch(BEDROCK_API_URL),
-      ]);
-
+      // Fetch Java status from mcstatus.io
+      const javaRes = await fetch(JAVA_API_URL);
       const javaData = await javaRes.json();
-      const bedrockData = await bedrockRes.json();
+
+      // Fetch Bedrock status from mcsrvstat.us
+      let bedrockOnline = false;
+      try {
+        const bedrockRes = await fetch(BEDROCK_API_URL);
+        const bedrockData = await bedrockRes.json();
+        bedrockOnline = bedrockData.online === true;
+      } catch (e) {
+        console.error("Bedrock status check failed:", e);
+      }
 
       const isOnline = javaData.online === true;
       const javaPlayers = javaData.players?.online || 0;
       const javaMaxPlayers = javaData.players?.max || 0;
-      const bedrockOnline = bedrockData.online === true;
 
-      // Use the server's reported latency if available, otherwise null
-      // mcstatus.io doesn't return ping, so we'll use the response time as a rough estimate
-      // but keep it reasonable (just the API call time, not doubled)
+      // Measure ping
       const pingStart = performance.now();
       await fetch(JAVA_API_URL, { method: "HEAD" }).catch(() => {});
       const pingMs = Math.round(performance.now() - pingStart);
@@ -54,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
         ping_ms: pingMs,
       });
 
-      // Check for status change - get last different status
+      // Check for status change
       const { data: lastRecords } = await supabase
         .from("server_status_history")
         .select("is_online, timestamp")
@@ -63,9 +66,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       let statusChanged = false;
       if (lastRecords && lastRecords.length >= 2) {
-        const current = lastRecords[0].is_online;
-        const previous = lastRecords[1].is_online;
-        statusChanged = current !== previous;
+        statusChanged = lastRecords[0].is_online !== lastRecords[1].is_online;
       }
 
       // If status changed, send Discord notification and email
@@ -104,43 +105,34 @@ const handler = async (req: Request): Promise<Response> => {
           });
         }
 
-        // Send email notification
+        // Send email notification via Resend REST API (no npm import needed)
         const resendApiKey = Deno.env.get("RESEND_API_KEY");
         if (resendApiKey) {
           try {
-            const { Resend } = await import("npm:resend@2.0.0");
-            const resend = new Resend(resendApiKey);
-            
             const nepalTime = new Date().toLocaleString("en-US", {
               timeZone: "Asia/Kathmandu",
               dateStyle: "medium",
               timeStyle: "short",
             });
-            
+
             const statusEmoji = isOnline ? "🟢" : "🔴";
             const statusText = isOnline ? "Online" : "Offline";
             const statusColor = isOnline ? "#22c55e" : "#ef4444";
 
-            // Get subscribers from profiles table or send to admin
-            await resend.emails.send({
-              from: "MCNP Network <onboarding@resend.dev>",
-              to: ["admin@mcnpnetwork.com"],
-              subject: `${statusEmoji} MCNP Network is now ${statusText}`,
-              html: `
-                <div style="background:#0c0c0c;padding:40px 20px;font-family:sans-serif;">
-                  <div style="max-width:600px;margin:0 auto;background:#1a1a1a;border-radius:16px;padding:40px;border:1px solid #333;">
-                    <h1 style="color:#fff;text-align:center;">${statusEmoji} Server Status Alert</h1>
-                    <div style="background:${statusColor}15;border:1px solid ${statusColor}40;border-radius:12px;padding:24px;text-align:center;margin:24px 0;">
-                      <div style="font-size:48px;">${statusEmoji}</div>
-                      <h2 style="color:${statusColor};">MCNP Network is now ${statusText}</h2>
-                      ${isOnline ? `<p style="color:#888;">Players: ${javaPlayers}/${javaMaxPlayers}</p>` : ""}
-                    </div>
-                    <p style="color:#888;text-align:center;">Time (Nepal): ${nepalTime}</p>
-                    <p style="color:#666;font-size:12px;text-align:center;margin-top:24px;">MCNP Network Status Monitor</p>
-                  </div>
-                </div>`,
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${resendApiKey}`,
+              },
+              body: JSON.stringify({
+                from: "MCNP Network <onboarding@resend.dev>",
+                to: ["admin@mcnpnetwork.com"],
+                subject: `${statusEmoji} MCNP Network is now ${statusText}`,
+                html: `<div style="background:#0c0c0c;padding:40px 20px;font-family:sans-serif;"><div style="max-width:600px;margin:0 auto;background:#1a1a1a;border-radius:16px;padding:40px;border:1px solid #333;"><h1 style="color:#fff;text-align:center;">${statusEmoji} Server Status Alert</h1><div style="background:${statusColor}15;border:1px solid ${statusColor}40;border-radius:12px;padding:24px;text-align:center;margin:24px 0;"><div style="font-size:48px;">${statusEmoji}</div><h2 style="color:${statusColor};">MCNP Network is now ${statusText}</h2>${isOnline ? `<p style="color:#888;">Players: ${javaPlayers}/${javaMaxPlayers}</p>` : ""}</div><p style="color:#888;text-align:center;">Time (Nepal): ${nepalTime}</p><p style="color:#666;font-size:12px;text-align:center;margin-top:24px;">MCNP Network Status Monitor</p></div></div>`,
+              }),
             });
-            console.log("Email notification sent");
+            console.log("Email notification sent via REST API");
           } catch (emailErr) {
             console.error("Email send error:", emailErr);
           }
@@ -148,24 +140,20 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       return new Response(
-        JSON.stringify({ success: true, online: isOnline, players: javaPlayers, statusChanged }),
+        JSON.stringify({ success: true, online: isOnline, players: javaPlayers, bedrockOnline, statusChanged }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     if (action === "aggregate_hourly") {
-      // Aggregate the last hour's data into hourly_player_stats
-      // Use Nepal time (UTC+5:45) for hour boundaries
       const now = new Date();
-      const nepalOffset = 5 * 60 + 45; // minutes
+      const nepalOffset = 5 * 60 + 45;
       const nepalMs = now.getTime() + nepalOffset * 60 * 1000;
       const nepalNow = new Date(nepalMs);
-      
-      // Round down to current hour in Nepal time
+
       const nepalHourStart = new Date(nepalNow);
       nepalHourStart.setMinutes(0, 0, 0);
-      
-      // Convert back to UTC for DB query
+
       const utcHourStart = new Date(nepalHourStart.getTime() - nepalOffset * 60 * 1000);
       const utcHourEnd = new Date(utcHourStart.getTime() + 60 * 60 * 1000);
 
@@ -182,7 +170,6 @@ const handler = async (req: Request): Promise<Response> => {
         const minPlayers = Math.min(...players);
         const wasOnline = hourData.some((d) => d.is_online);
 
-        // Store with the UTC equivalent of the Nepal hour start
         await supabase.from("hourly_player_stats").upsert(
           {
             hour_timestamp: utcHourStart.toISOString(),
@@ -202,7 +189,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (action === "aggregate_daily") {
-      // Run the daily aggregation function
       await supabase.rpc("aggregate_daily_uptime");
       await supabase.rpc("aggregate_today_uptime");
 
@@ -213,9 +199,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (action === "send_stats") {
-      // Send periodic Discord stats
       const { data: uptimeData } = await supabase.rpc("get_uptime_stats", { hours_back: 24 });
-      
+
       const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
       if (discordWebhookUrl && uptimeData && uptimeData.length > 0) {
         const stats = uptimeData[0];
@@ -225,7 +210,6 @@ const handler = async (req: Request): Promise<Response> => {
           timeStyle: "short",
         });
 
-        // Get current server status
         const javaRes = await fetch(JAVA_API_URL);
         const javaData = await javaRes.json();
 
@@ -241,7 +225,7 @@ const handler = async (req: Request): Promise<Response> => {
             { name: "🏆 Peak Players (24h)", value: `${stats.max_players}`, inline: true },
             { name: "🕐 Time (Nepal)", value: nepalTime, inline: true },
           ],
-          footer: { text: "MCNP Network • Updates every 5 minutes" },
+          footer: { text: "MCNP Network • Updates every 5 minutes. Made by Sakshyam Paudel." },
           timestamp: new Date().toISOString(),
         };
 

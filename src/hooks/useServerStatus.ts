@@ -4,10 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109';
-const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnpnetwork.com:1109';
+const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:1109';
 
 // Transform mcstatus.io response to our ServerStatus format
-const transformMcStatusResponse = (data: any, isBedrock: boolean = false): ServerStatus => {
+// Transform mcstatus.io Java response
+const transformJavaResponse = (data: any): ServerStatus => {
   const playerList: string[] = [];
   if (data.players?.list && Array.isArray(data.players.list)) {
     data.players.list.forEach((p: any) => {
@@ -35,6 +36,27 @@ const transformMcStatusResponse = (data: any, isBedrock: boolean = false): Serve
       html: [data.motd.html || '']
     } : undefined,
     icon: data.icon || undefined,
+  };
+};
+
+// Transform mcsrvstat.us Bedrock response
+const transformBedrockResponse = (data: any): ServerStatus => {
+  return {
+    online: data.online === true,
+    ip: data.ip || '',
+    port: data.port || 1109,
+    hostname: data.hostname || 'bedrock.mcnpnetwork.com',
+    version: data.version || undefined,
+    players: data.online ? {
+      online: data.players?.online || 0,
+      max: data.players?.max || 0,
+      list: []
+    } : undefined,
+    motd: data.motd ? {
+      raw: Array.isArray(data.motd.raw) ? data.motd.raw : [data.motd.raw || ''],
+      clean: Array.isArray(data.motd.clean) ? data.motd.clean : [data.motd.clean || ''],
+      html: Array.isArray(data.motd.html) ? data.motd.html : [data.motd.html || '']
+    } : undefined,
     gamemode: data.gamemode || undefined,
   };
 };
@@ -242,8 +264,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaData = await javaResponse.json();
       const bedrockData = await bedrockResponse.json();
 
-      const transformedJava = transformMcStatusResponse(javaData, false);
-      const transformedBedrock = transformMcStatusResponse(bedrockData, true);
+      const transformedJava = transformJavaResponse(javaData);
+      const transformedBedrock = transformBedrockResponse(bedrockData);
 
       setJavaStatus(transformedJava);
       setBedrockStatus(transformedBedrock);

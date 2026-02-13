@@ -3,6 +3,7 @@ import { StatusBadge } from './StatusBadge';
 import { StatusType } from '@/types/server';
 import { cn } from '@/lib/utils';
 import mcnpLogo from '@/assets/mcnp-logo.png';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   status: StatusType;
@@ -23,10 +24,14 @@ export const Header = ({
 }: HeaderProps) => {
   return (
     <header className="relative py-8 px-4 overflow-hidden">
-      {/* Background glow effect */}
-      <div 
+      {/* Animated background glow */}
+      <motion.div
+        animate={{
+          opacity: [0.2, 0.4, 0.2],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         className={cn(
-          "absolute inset-0 opacity-30 transition-all duration-500",
+          "absolute inset-0 transition-all duration-500",
           status === 'online' ? 'bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.3)_0%,transparent_50%)]' : 
           status === 'offline' ? 'bg-[radial-gradient(ellipse_at_top,hsl(var(--destructive)/0.3)_0%,transparent_50%)]' :
           'bg-[radial-gradient(ellipse_at_top,hsl(var(--warning)/0.3)_0%,transparent_50%)]'
@@ -34,31 +39,50 @@ export const Header = ({
       />
       
       <div className="relative max-w-4xl mx-auto text-center">
-        <div className="flex items-center justify-center mb-4">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          className="flex items-center justify-center mb-4"
+        >
           <img 
             src={mcnpLogo} 
             alt="MCNP Network" 
-            className="h-24 md:h-32 object-contain animate-float"
+            className="h-24 md:h-32 object-contain drop-shadow-[0_0_30px_hsl(var(--primary)/0.4)]"
           />
-        </div>
+        </motion.div>
         
-        <p className="text-muted-foreground text-lg mb-6">
+        <motion.p 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-muted-foreground text-lg mb-6"
+        >
           Real-time Minecraft Server Status
-        </p>
+        </motion.p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex flex-wrap items-center justify-center gap-3"
+        >
           <StatusBadge status={status} />
           
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onRefresh}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-all disabled:opacity-50"
           >
             <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
             Refresh
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onEnableNotifications}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
@@ -78,12 +102,17 @@ export const Header = ({
                 Enable Alerts
               </>
             )}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
-        <p className="text-muted-foreground text-xs mt-4">
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-muted-foreground text-xs mt-4"
+        >
           Last checked: {lastChecked.toLocaleTimeString()} • Auto-updates every 10s
-        </p>
+        </motion.p>
       </div>
     </header>
   );
