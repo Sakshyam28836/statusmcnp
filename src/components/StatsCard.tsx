@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
+import { AnimatedCounter } from './AnimatedCounter';
 
 interface StatsCardProps {
   icon: LucideIcon;
@@ -31,6 +32,8 @@ export const StatsCard = ({ icon: Icon, label, value, subtext, variant = 'defaul
     destructive: 'hover:shadow-[0_0_20px_hsl(var(--destructive)/0.15)]',
   };
 
+  const isNumber = typeof value === 'number';
+
   return (
     <div className={cn(
       "minecraft-border rounded-xl bg-card p-3 sm:p-5 card-glow transition-all duration-300 hover:scale-[1.03] cursor-default",
@@ -46,7 +49,11 @@ export const StatsCard = ({ icon: Icon, label, value, subtext, variant = 'defaul
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-muted-foreground text-[10px] sm:text-sm mb-0.5 sm:mb-1">{label}</p>
-          <p className="text-lg sm:text-2xl font-bold text-foreground truncate">{value}</p>
+          {isNumber ? (
+            <AnimatedCounter value={value} className="text-lg sm:text-2xl font-bold text-foreground" />
+          ) : (
+            <p className="text-lg sm:text-2xl font-bold text-foreground truncate">{value}</p>
+          )}
           {subtext && (
             <p className="text-muted-foreground text-[9px] sm:text-xs mt-0.5 sm:mt-1">{subtext}</p>
           )}
