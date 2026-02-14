@@ -205,28 +205,9 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Save status to database
-  const saveStatusToDatabase = useCallback(async (
-    isOnline: boolean,
-    javaPlayers: number,
-    javaMaxPlayers: number,
-    bedrockOnline: boolean,
-    ping: number | null
-  ) => {
-    try {
-      await supabase
-        .from('server_status_history')
-        .insert({
-          is_online: isOnline,
-          java_players: javaPlayers,
-          java_max_players: javaMaxPlayers,
-          bedrock_online: bedrockOnline,
-          ping_ms: ping
-        });
-    } catch (err) {
-      console.error('Failed to save status to database:', err);
-    }
-  }, []);
+  // Status is saved by server-side cron job only (every minute)
+  // Frontend no longer writes to server_status_history to avoid
+  // false offline records from client-side API failures/rate limits
 
   // Fetch uptime stats for Discord updates
   const fetchUptimeStats = useCallback(async () => {
@@ -275,14 +256,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const javaMaxPlayers = transformedJava.players?.max || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
       
-      // Save to database with capped ping
-      await saveStatusToDatabase(
-        isOnline,
-        javaPlayers,
-        javaMaxPlayers,
-        transformedBedrock.online,
-        estimatedPing
-      );
+      // Status is saved by server-side cron only - no client-side DB writes
       
       // Check for status change and send notifications
       if (!isFirstFetch.current && previousStatus.current !== 'checking' && previousStatus.current !== newStatus) {
@@ -343,12 +317,12 @@ export const useServerStatus = (refreshInterval = 10000) => {
         setStatus('offline');
       }
       
-      await saveStatusToDatabase(false, 0, 0, false, null);
+      // Don't write to DB from client - cron handles this
     } finally {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, saveStatusToDatabase, fetchUptimeStats]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {
