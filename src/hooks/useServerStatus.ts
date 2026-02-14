@@ -47,11 +47,9 @@ const transformBedrockResponse = (data: any): ServerStatus => {
     port: data.port || 1109,
     hostname: data.hostname || 'bedrock.mcnpnetwork.com',
     version: data.version || undefined,
-    players: data.online ? {
-      online: data.players?.online || 0,
-      max: data.players?.max || 0,
-      list: []
-    } : undefined,
+    // Bedrock shares the same proxy as Java, so player count is identical
+    // Don't show separate player count to avoid confusion
+    players: undefined,
     motd: data.motd ? {
       raw: Array.isArray(data.motd.raw) ? data.motd.raw : [data.motd.raw || ''],
       clean: Array.isArray(data.motd.clean) ? data.motd.clean : [data.motd.clean || ''],
