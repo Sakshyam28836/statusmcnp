@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useSpring, useTransform, animate } from 'framer-motion';
+import { motion, animate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface AnimatedCounterProps {
@@ -12,6 +12,7 @@ export const AnimatedCounter = ({ value, className, duration = 1.2 }: AnimatedCo
   const [displayValue, setDisplayValue] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
   const prevValue = useRef(value);
+  const nodeRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const controls = animate(displayValue, value, {
@@ -31,6 +32,7 @@ export const AnimatedCounter = ({ value, className, duration = 1.2 }: AnimatedCo
 
   return (
     <motion.span
+      ref={nodeRef}
       className={cn(className, 'inline-block')}
       animate={isPulsing ? {
         scale: [1, 1.15, 1],
