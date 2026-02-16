@@ -11,6 +11,7 @@ import Anarchy from "./pages/Anarchy";
 import PracticePvp from "./pages/PracticePvp";
 import SocialMedia from "./pages/SocialMedia";
 import Staff from "./pages/Staff";
+import Events from "./pages/Events";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/practice-pvp" element={<PracticePvp />} />
           <Route path="/social" element={<SocialMedia />} />
           <Route path="/staff" element={<Staff />} />
+          <Route path="/events" element={<Events />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
