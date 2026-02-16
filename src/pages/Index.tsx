@@ -4,6 +4,7 @@ import { ServerCard } from '@/components/ServerCard';
 import { StatsCard } from '@/components/StatsCard';
 import { DatabaseUptimeStats } from '@/components/DatabaseUptimeStats';
 import { UptimeChart } from '@/components/UptimeChart';
+import { MonthlyUptimeChart } from '@/components/MonthlyUptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { PlayerGraph } from '@/components/PlayerGraph';
 import { DailyPlayerStats } from '@/components/DailyPlayerStats';
@@ -185,6 +186,16 @@ const Index = () => {
           className="mb-4 sm:mb-6 lg:mb-8"
         >
           <UptimeChart />
+        </motion.section>
+
+        {/* 30-Day Uptime Trend */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.45 }}
+          className="mb-4 sm:mb-6 lg:mb-8"
+        >
+          <MonthlyUptimeChart />
         </motion.section>
 
         {/* Discord & Game Modes */}
