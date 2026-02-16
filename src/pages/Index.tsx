@@ -11,7 +11,7 @@ import { DailyPlayerStats } from '@/components/DailyPlayerStats';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { NavLink } from '@/components/NavLink';
-import { Users, Clock, Wifi, Activity, Share2, UserCircle } from 'lucide-react';
+import { Users, Clock, Wifi, Activity, Share2, UserCircle, CalendarDays } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const fadeUp = {
@@ -66,6 +66,10 @@ const Index = () => {
           <NavLink to="/staff" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all hover:scale-105">
             <UserCircle className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Staff</span>
+          </NavLink>
+          <NavLink to="/events" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all hover:scale-105">
+            <CalendarDays className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Events</span>
           </NavLink>
         </motion.nav>
 

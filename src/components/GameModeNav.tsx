@@ -23,7 +23,7 @@ export const GameModeNav = () => {
           >
             <mode.icon className={cn("w-8 h-8 transition-transform group-hover:scale-110", mode.color)} />
             <span className="text-sm font-medium text-foreground text-center">{mode.name}</span>
-            <span className="text-xs text-warning">Coming Soon</span>
+            <span className="text-xs text-success">Released</span>
           </Link>
         ))}
       </div>

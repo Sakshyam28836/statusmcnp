@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          details: string | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          prize_pool: string | null
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          details?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          prize_pool?: string | null
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          details?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          prize_pool?: string | null
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hourly_player_stats: {
         Row: {
           avg_players: number
