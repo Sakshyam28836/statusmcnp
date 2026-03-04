@@ -369,7 +369,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendDiscordHourlyReport, sendEmailNotification, fetchUptimeStats]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {
