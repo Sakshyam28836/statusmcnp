@@ -80,13 +80,23 @@ const handler = async (req: Request): Promise<Response> => {
       };
     } else if (data.type === 'player_stats') {
       embed = {
-        title: "📈 Server Statistics Update",
-        description: `Current status report for **${data.serverName}**`,
+        title: "📊 Hourly Server Report",
+        description: `Hourly status report for **${data.serverName}**`,
         color: 0x22d3ee,
         fields: [
           {
             name: "👥 Current Players",
             value: `${data.playerCount || 0}/${data.maxPlayers || '?'}`,
+            inline: true
+          },
+          {
+            name: "📈 Peak Players (24h)",
+            value: `${data.peakPlayers ?? 'N/A'}`,
+            inline: true
+          },
+          {
+            name: "👤 Avg Players (24h)",
+            value: `${data.avgPlayers !== undefined ? Math.round(data.avgPlayers) : 'N/A'}`,
             inline: true
           },
           {
@@ -96,17 +106,17 @@ const handler = async (req: Request): Promise<Response> => {
           },
           {
             name: "📡 Avg Ping",
-            value: data.avgPing ? `${data.avgPing}ms` : 'N/A',
+            value: data.avgPing ? `${Math.round(data.avgPing)}ms` : 'N/A',
             inline: true
           },
           {
             name: "🕐 Time (Nepal)",
             value: nepalTime,
-            inline: false
+            inline: true
           }
         ],
         footer: {
-          text: "MCNP Network • Updates every 5 minutes. Made by Sakshyam Paudel."
+          text: "MCNP Network • Hourly Report. Made by Sakshyam Paudel."
         },
         timestamp: new Date().toISOString()
       };
