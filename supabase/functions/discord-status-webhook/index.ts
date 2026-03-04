@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
           },
           {
             name: "📊 24h Uptime",
-            value: data.uptime24h !== undefined ? `${data.uptime24h.toFixed(2)}%` : 'N/A',
+            value: data.uptime24h !== undefined ? `${Math.round(data.uptime24h)}%` : 'N/A',
             inline: true
           },
           {

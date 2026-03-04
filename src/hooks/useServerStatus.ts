@@ -170,7 +170,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Send Discord webhook for player stats (every 10 minutes)
+  // Send Discord webhook for player stats (every 1 hour)
   const sendDiscordStatsUpdate = useCallback(async (
     playerCount: number,
     maxPlayers: number,
@@ -178,7 +178,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     avgPing?: number
   ) => {
     const now = Date.now();
-    if (now - lastStatsUpdateRef.current < 5 * 60 * 1000) {
+    if (now - lastStatsUpdateRef.current < 60 * 60 * 1000) {
       return;
     }
 
