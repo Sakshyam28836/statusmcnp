@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 interface StatusNotificationRequest {
-  type: 'status_change' | 'player_stats';
+  type: 'status_change' | 'player_stats' | 'hourly_report';
   serverName: string;
   status?: 'online' | 'offline';
   playerCount?: number;
@@ -79,38 +79,76 @@ const handler = async (req: Request): Promise<Response> => {
         timestamp: new Date().toISOString()
       };
     } else if (data.type === 'player_stats') {
+      // Quick 5-minute update — compact status ping
+      const statusEmoji = data.playerCount && data.playerCount > 0 ? '🟢' : '🟡';
+      embed = {
+        title: `${statusEmoji} Server Status Update`,
+        description: `Live update for **${data.serverName}**`,
+        color: 0x3b82f6,
+        fields: [
+          {
+            name: "👥 Players Online",
+            value: `**${data.playerCount || 0}**/${data.maxPlayers || '?'}`,
+            inline: true
+          },
+          {
+            name: "📊 Uptime (24h)",
+            value: data.uptime24h !== undefined ? `**${Math.round(data.uptime24h)}%**` : 'N/A',
+            inline: true
+          },
+          {
+            name: "📡 Ping",
+            value: data.avgPing ? `**${Math.round(data.avgPing)}ms**` : 'N/A',
+            inline: true
+          }
+        ],
+        footer: {
+          text: `MCNP Network • ${nepalTime} NPT`
+        },
+        timestamp: new Date().toISOString()
+      };
+    } else if (data.type === 'hourly_report') {
+      // Detailed hourly report with player history
+      const uptimeEmoji = (data.uptime24h ?? 0) >= 99 ? '🏆' : (data.uptime24h ?? 0) >= 90 ? '✅' : '⚠️';
+      const playerBar = (() => {
+        const count = data.playerCount || 0;
+        const max = data.maxPlayers || 100;
+        const filled = Math.round((count / max) * 10);
+        return '🟩'.repeat(filled) + '⬛'.repeat(10 - filled);
+      })();
+
       embed = {
         title: "📊 Hourly Server Report",
-        description: `Hourly status report for **${data.serverName}**`,
+        description: `Detailed hourly analysis for **${data.serverName}**\n\n**Player Capacity:**\n${playerBar} ${data.playerCount || 0}/${data.maxPlayers || '?'}`,
         color: 0x22d3ee,
         fields: [
           {
             name: "👥 Current Players",
-            value: `${data.playerCount || 0}/${data.maxPlayers || '?'}`,
+            value: `**${data.playerCount || 0}**/${data.maxPlayers || '?'}`,
             inline: true
           },
           {
             name: "📈 Peak Players (24h)",
-            value: `${data.peakPlayers ?? 'N/A'}`,
+            value: `**${data.peakPlayers ?? 'N/A'}**`,
             inline: true
           },
           {
             name: "👤 Avg Players (24h)",
-            value: `${data.avgPlayers !== undefined ? Math.round(data.avgPlayers) : 'N/A'}`,
+            value: `**${data.avgPlayers !== undefined ? Math.round(data.avgPlayers) : 'N/A'}**`,
             inline: true
           },
           {
-            name: "📊 24h Uptime",
-            value: data.uptime24h !== undefined ? `${Math.round(data.uptime24h)}%` : 'N/A',
+            name: `${uptimeEmoji} 24h Uptime`,
+            value: data.uptime24h !== undefined ? `**${Math.round(data.uptime24h)}%**` : 'N/A',
             inline: true
           },
           {
             name: "📡 Avg Ping",
-            value: data.avgPing ? `${Math.round(data.avgPing)}ms` : 'N/A',
+            value: data.avgPing ? `**${Math.round(data.avgPing)}ms**` : 'N/A',
             inline: true
           },
           {
-            name: "🕐 Time (Nepal)",
+            name: "🕐 Nepal Time",
             value: nepalTime,
             inline: true
           }

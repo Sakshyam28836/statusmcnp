@@ -76,6 +76,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const isFirstFetch = useRef(true);
   const discordSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
   const lastStatsUpdateRef = useRef<number>(0);
+  const lastHourlyReportRef = useRef<number>(0);
 
   // Request notification permission
   const enableNotifications = useCallback(async () => {
@@ -170,17 +171,15 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Send Discord webhook for player stats (every 1 hour)
+  // Send Discord quick status update (every 5 minutes)
   const sendDiscordStatsUpdate = useCallback(async (
     playerCount: number,
     maxPlayers: number,
     uptime24h?: number,
-    avgPing?: number,
-    peakPlayers?: number,
-    avgPlayers?: number
+    avgPing?: number
   ) => {
     const now = Date.now();
-    if (now - lastStatsUpdateRef.current < 60 * 60 * 1000) {
+    if (now - lastStatsUpdateRef.current < 5 * 60 * 1000) {
       return;
     }
 
@@ -193,8 +192,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
           maxPlayers,
           uptime24h,
           avgPing,
-          peakPlayers,
-          avgPlayers,
           timestamp: new Date().toISOString()
         }
       });
@@ -204,6 +201,43 @@ export const useServerStatus = (refreshInterval = 10000) => {
       }
     } catch (err) {
       console.error('Error sending Discord stats:', err);
+    }
+  }, []);
+
+  // Send detailed hourly report with player history
+  const sendDiscordHourlyReport = useCallback(async (
+    playerCount: number,
+    maxPlayers: number,
+    uptime24h?: number,
+    avgPing?: number,
+    peakPlayers?: number,
+    avgPlayers?: number
+  ) => {
+    const now = Date.now();
+    if (now - lastHourlyReportRef.current < 60 * 60 * 1000) {
+      return;
+    }
+
+    try {
+      const response = await supabase.functions.invoke('discord-status-webhook', {
+        body: {
+          type: 'hourly_report',
+          serverName: 'MCNP Network',
+          playerCount,
+          maxPlayers,
+          uptime24h,
+          avgPing,
+          peakPlayers,
+          avgPlayers,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      if (!response.error) {
+        lastHourlyReportRef.current = now;
+      }
+    } catch (err) {
+      console.error('Error sending Discord hourly report:', err);
     }
   }, []);
 
@@ -285,10 +319,17 @@ export const useServerStatus = (refreshInterval = 10000) => {
         );
       }
       
-      // Send Discord stats update every 10 minutes (only when online)
+      // Send Discord quick status every 5 minutes (only when online)
       if (isOnline) {
         const stats = await fetchUptimeStats();
         sendDiscordStatsUpdate(
+          javaPlayers,
+          javaMaxPlayers,
+          stats?.uptime,
+          stats?.avgPing
+        );
+        // Send detailed hourly report
+        sendDiscordHourlyReport(
           javaPlayers,
           javaMaxPlayers,
           stats?.uptime,
@@ -328,7 +369,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendDiscordHourlyReport, sendEmailNotification, fetchUptimeStats]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {
