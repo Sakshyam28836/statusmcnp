@@ -319,10 +319,17 @@ export const useServerStatus = (refreshInterval = 10000) => {
         );
       }
       
-      // Send Discord stats update every 10 minutes (only when online)
+      // Send Discord quick status every 5 minutes (only when online)
       if (isOnline) {
         const stats = await fetchUptimeStats();
         sendDiscordStatsUpdate(
+          javaPlayers,
+          javaMaxPlayers,
+          stats?.uptime,
+          stats?.avgPing
+        );
+        // Send detailed hourly report
+        sendDiscordHourlyReport(
           javaPlayers,
           javaMaxPlayers,
           stats?.uptime,
