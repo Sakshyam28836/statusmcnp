@@ -193,6 +193,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
           maxPlayers,
           uptime24h,
           avgPing,
+          peakPlayers,
+          avgPlayers,
           timestamp: new Date().toISOString()
         }
       });
