@@ -76,7 +76,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const isFirstFetch = useRef(true);
   const discordSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
   const lastStatsUpdateRef = useRef<number>(0);
-  const lastHourlyReportRef = useRef<number>(0);
 
   // Request notification permission
   const enableNotifications = useCallback(async () => {
@@ -171,7 +170,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Send Discord quick status update (every 5 minutes)
+  // Send Discord webhook for player stats (every 10 minutes)
   const sendDiscordStatsUpdate = useCallback(async (
     playerCount: number,
     maxPlayers: number,
@@ -204,43 +203,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Send detailed hourly report with player history
-  const sendDiscordHourlyReport = useCallback(async (
-    playerCount: number,
-    maxPlayers: number,
-    uptime24h?: number,
-    avgPing?: number,
-    peakPlayers?: number,
-    avgPlayers?: number
-  ) => {
-    const now = Date.now();
-    if (now - lastHourlyReportRef.current < 60 * 60 * 1000) {
-      return;
-    }
-
-    try {
-      const response = await supabase.functions.invoke('discord-status-webhook', {
-        body: {
-          type: 'hourly_report',
-          serverName: 'MCNP Network',
-          playerCount,
-          maxPlayers,
-          uptime24h,
-          avgPing,
-          peakPlayers,
-          avgPlayers,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      if (!response.error) {
-        lastHourlyReportRef.current = now;
-      }
-    } catch (err) {
-      console.error('Error sending Discord hourly report:', err);
-    }
-  }, []);
-
   // Status is saved by server-side cron job only (every minute)
   // Frontend no longer writes to server_status_history to avoid
   // false offline records from client-side API failures/rate limits
@@ -251,10 +213,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const { data, error } = await supabase.rpc('get_uptime_stats', { hours_back: 24 });
       if (error || !data || data.length === 0) return null;
       return {
-        uptime: Math.round(Number(data[0].uptime_percentage)),
-        avgPing: data[0].avg_ping ? Math.round(Number(data[0].avg_ping)) : undefined,
-        avgPlayers: data[0].avg_players ? Math.round(Number(data[0].avg_players)) : undefined,
-        maxPlayers: data[0].max_players ? Number(data[0].max_players) : undefined,
+        uptime: Number(data[0].uptime_percentage),
+        avgPing: data[0].avg_ping ? Number(data[0].avg_ping) : undefined
       };
     } catch {
       return null;
@@ -319,7 +279,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
         );
       }
       
-      // Send Discord quick status every 5 minutes (only when online)
+      // Send Discord stats update every 10 minutes (only when online)
       if (isOnline) {
         const stats = await fetchUptimeStats();
         sendDiscordStatsUpdate(
@@ -327,15 +287,6 @@ export const useServerStatus = (refreshInterval = 10000) => {
           javaMaxPlayers,
           stats?.uptime,
           stats?.avgPing
-        );
-        // Send detailed hourly report
-        sendDiscordHourlyReport(
-          javaPlayers,
-          javaMaxPlayers,
-          stats?.uptime,
-          stats?.avgPing,
-          stats?.maxPlayers,
-          stats?.avgPlayers
         );
       }
       
@@ -369,7 +320,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendDiscordHourlyReport, sendEmailNotification, fetchUptimeStats]);
+  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {

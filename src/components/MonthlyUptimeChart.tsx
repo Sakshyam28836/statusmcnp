@@ -46,7 +46,7 @@ export const MonthlyUptimeChart = () => {
     if (!chartData.length) return { avg: 0, min: 0, perfect: 0 };
     const uptimes = chartData.map(d => d.uptime);
     return {
-      avg: Math.round(uptimes.reduce((a, b) => a + b, 0) / uptimes.length),
+      avg: Math.round(uptimes.reduce((a, b) => a + b, 0) / uptimes.length * 10) / 10,
       min: Math.min(...uptimes),
       perfect: uptimes.filter(u => u >= 99.9).length,
     };
@@ -150,7 +150,7 @@ export const MonthlyUptimeChart = () => {
                           data.uptime >= 90 ? 'text-success' :
                           data.uptime >= 70 ? 'text-warning' : 'text-destructive'
                         }`}>
-                          {Math.round(data.uptime)}% uptime
+                          {data.uptime.toFixed(2)}% uptime
                         </p>
                         <p className="text-[10px] sm:text-xs text-muted-foreground">
                           {data.online}/{data.total} checks passed

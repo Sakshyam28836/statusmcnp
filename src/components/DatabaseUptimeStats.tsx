@@ -239,7 +239,7 @@ export const DatabaseUptimeStats = ({ isOnline, currentPing }: DatabaseUptimeSta
                 {stat.label}
               </p>
               <p className={cn("text-xl sm:text-3xl font-bold", getUptimeColor(stat.uptime))}>
-                {stat.uptime !== null ? `${Math.round(stat.uptime)}%` : '--'}
+                {stat.uptime !== null ? `${stat.uptime.toFixed(2)}%` : '--'}
               </p>
               <p className={cn("text-[10px] sm:text-xs mt-1", getUptimeColor(stat.uptime))}>
                 {getUptimeLabel(stat.uptime)}
