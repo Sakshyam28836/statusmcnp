@@ -76,6 +76,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const isFirstFetch = useRef(true);
   const discordSentRef = useRef<{ status: StatusType; timestamp: number } | null>(null);
   const lastStatsUpdateRef = useRef<number>(0);
+  const lastHourlyReportRef = useRef<number>(0);
 
   // Request notification permission
   const enableNotifications = useCallback(async () => {
