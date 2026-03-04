@@ -175,7 +175,9 @@ export const useServerStatus = (refreshInterval = 10000) => {
     playerCount: number,
     maxPlayers: number,
     uptime24h?: number,
-    avgPing?: number
+    avgPing?: number,
+    peakPlayers?: number,
+    avgPlayers?: number
   ) => {
     const now = Date.now();
     if (now - lastStatsUpdateRef.current < 60 * 60 * 1000) {
