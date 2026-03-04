@@ -16,6 +16,8 @@ interface StatusNotificationRequest {
   maxPlayers?: number;
   uptime24h?: number;
   avgPing?: number;
+  peakPlayers?: number;
+  avgPlayers?: number;
   timestamp: string;
 }
 
@@ -78,8 +80,8 @@ const handler = async (req: Request): Promise<Response> => {
       };
     } else if (data.type === 'player_stats') {
       embed = {
-        title: "📈 Server Statistics Update",
-        description: `Current status report for **${data.serverName}**`,
+        title: "📊 Hourly Server Report",
+        description: `Hourly status report for **${data.serverName}**`,
         color: 0x22d3ee,
         fields: [
           {
@@ -88,23 +90,33 @@ const handler = async (req: Request): Promise<Response> => {
             inline: true
           },
           {
+            name: "📈 Peak Players (24h)",
+            value: `${data.peakPlayers ?? 'N/A'}`,
+            inline: true
+          },
+          {
+            name: "👤 Avg Players (24h)",
+            value: `${data.avgPlayers !== undefined ? Math.round(data.avgPlayers) : 'N/A'}`,
+            inline: true
+          },
+          {
             name: "📊 24h Uptime",
-            value: data.uptime24h !== undefined ? `${data.uptime24h.toFixed(2)}%` : 'N/A',
+            value: data.uptime24h !== undefined ? `${Math.round(data.uptime24h)}%` : 'N/A',
             inline: true
           },
           {
             name: "📡 Avg Ping",
-            value: data.avgPing ? `${data.avgPing}ms` : 'N/A',
+            value: data.avgPing ? `${Math.round(data.avgPing)}ms` : 'N/A',
             inline: true
           },
           {
             name: "🕐 Time (Nepal)",
             value: nepalTime,
-            inline: false
+            inline: true
           }
         ],
         footer: {
-          text: "MCNP Network • Updates every 5 minutes. Made by Sakshyam Paudel."
+          text: "MCNP Network • Hourly Report. Made by Sakshyam Paudel."
         },
         timestamp: new Date().toISOString()
       };

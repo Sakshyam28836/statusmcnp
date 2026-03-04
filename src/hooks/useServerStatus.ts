@@ -170,15 +170,17 @@ export const useServerStatus = (refreshInterval = 10000) => {
     }
   }, []);
 
-  // Send Discord webhook for player stats (every 10 minutes)
+  // Send Discord webhook for player stats (every 1 hour)
   const sendDiscordStatsUpdate = useCallback(async (
     playerCount: number,
     maxPlayers: number,
     uptime24h?: number,
-    avgPing?: number
+    avgPing?: number,
+    peakPlayers?: number,
+    avgPlayers?: number
   ) => {
     const now = Date.now();
-    if (now - lastStatsUpdateRef.current < 5 * 60 * 1000) {
+    if (now - lastStatsUpdateRef.current < 60 * 60 * 1000) {
       return;
     }
 
@@ -191,6 +193,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
           maxPlayers,
           uptime24h,
           avgPing,
+          peakPlayers,
+          avgPlayers,
           timestamp: new Date().toISOString()
         }
       });
@@ -213,8 +217,10 @@ export const useServerStatus = (refreshInterval = 10000) => {
       const { data, error } = await supabase.rpc('get_uptime_stats', { hours_back: 24 });
       if (error || !data || data.length === 0) return null;
       return {
-        uptime: Number(data[0].uptime_percentage),
-        avgPing: data[0].avg_ping ? Number(data[0].avg_ping) : undefined
+        uptime: Math.round(Number(data[0].uptime_percentage)),
+        avgPing: data[0].avg_ping ? Math.round(Number(data[0].avg_ping)) : undefined,
+        avgPlayers: data[0].avg_players ? Math.round(Number(data[0].avg_players)) : undefined,
+        maxPlayers: data[0].max_players ? Number(data[0].max_players) : undefined,
       };
     } catch {
       return null;
@@ -286,7 +292,9 @@ export const useServerStatus = (refreshInterval = 10000) => {
           javaPlayers,
           javaMaxPlayers,
           stats?.uptime,
-          stats?.avgPing
+          stats?.avgPing,
+          stats?.maxPlayers,
+          stats?.avgPlayers
         );
       }
       
