@@ -16,6 +16,8 @@ interface StatusNotificationRequest {
   maxPlayers?: number;
   uptime24h?: number;
   avgPing?: number;
+  peakPlayers?: number;
+  avgPlayers?: number;
   timestamp: string;
 }
 
