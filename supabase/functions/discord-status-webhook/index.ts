@@ -114,7 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const discordPayload = {
       username: "MCNP Status Bot",
-      avatar_url: "https://statusmcnp.lovable.app/favicon.png",
+      avatar_url: "https://mcnpstatus.netlify.app/favicon.png",
       embeds: [embed]
     };
 

@@ -99,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               username: "MCNP Status Bot",
-              avatar_url: "https://statusmcnp.lovable.app/favicon.png",
+              avatar_url: "https://mcnpstatus.netlify.app/favicon.png",
               embeds: [embed],
             }),
           });
@@ -234,7 +234,7 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: "MCNP Status Bot",
-            avatar_url: "https://statusmcnp.lovable.app/favicon.png",
+            avatar_url: "https://mcnpstatus.netlify.app/favicon.png",
             embeds: [embed],
           }),
         });
@@ -313,7 +313,7 @@ const handler = async (req: Request): Promise<Response> => {
       await fetch(discordWebhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "MCNP Status Bot", avatar_url: "https://statusmcnp.lovable.app/favicon.png", embeds: [embed] }),
+        body: JSON.stringify({ username: "MCNP Status Bot", avatar_url: "https://mcnpstatus.netlify.app/favicon.png", embeds: [embed] }),
       });
 
       return new Response(JSON.stringify({ success: true, action: "hourly_report" }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -421,7 +421,7 @@ const handler = async (req: Request): Promise<Response> => {
             { name: "👥 Avg Players", value: `**${Number(s30d.avg_players || 0).toFixed(1)}**`, inline: true },
             { name: "🏆 Peak Players", value: `**${s30d.max_players || 0}**`, inline: true },
             { name: "🕐 Report Generated", value: nepalTime, inline: false },
-            { name: "🔗 Live Dashboard", value: "[statusmcnp.lovable.app](https://statusmcnp.lovable.app)", inline: false },
+            { name: "🔗 Live Dashboard", value: "[mcnpstatus.netlify.app](https://mcnpstatus.netlify.app)", inline: false },
           ],
           footer: { text: "MCNP Network • Daily Report • Made by Sakshyam Paudel" },
           timestamp: new Date().toISOString(),
@@ -431,7 +431,7 @@ const handler = async (req: Request): Promise<Response> => {
       await fetch(discordWebhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "MCNP Daily Report", avatar_url: "https://statusmcnp.lovable.app/favicon.png", embeds }),
+        body: JSON.stringify({ username: "MCNP Daily Report", avatar_url: "https://mcnpstatus.netlify.app/favicon.png", embeds }),
       });
 
       return new Response(JSON.stringify({ success: true, action: "daily_report" }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });

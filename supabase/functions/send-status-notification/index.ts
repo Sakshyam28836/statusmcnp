@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <tr><td style="color:#888;padding:8px 0;font-size:14px;">Server Address</td><td style="color:#22d3ee;padding:8px 0;font-size:14px;text-align:right;">play.mcnpnetwork.com</td></tr>
                   </table>
                 </div>
-                ${isOnline ? `<div style="text-align:center;margin-bottom:24px;"><a href="https://statusmcnp.lovable.app" style="display:inline-block;background:linear-gradient(135deg,#22d3ee 0%,#0ea5e9 100%);color:#000;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;">View Server Status</a></div>` : `<div style="text-align:center;margin-bottom:24px;"><p style="color:#888;font-size:14px;margin:0;">We'll notify you when the server comes back online.</p></div>`}
+                ${isOnline ? `<div style="text-align:center;margin-bottom:24px;"><a href="https://mcnpstatus.netlify.app" style="display:inline-block;background:linear-gradient(135deg,#22d3ee 0%,#0ea5e9 100%);color:#000;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;">View Server Status</a></div>` : `<div style="text-align:center;margin-bottom:24px;"><p style="color:#888;font-size:14px;margin:0;">We'll notify you when the server comes back online.</p></div>`}
                 <div style="text-align:center;border-top:1px solid #333;padding-top:24px;"><p style="color:#666;font-size:12px;margin:0;">This is an automated notification from MCNP Network Status Monitor</p></div>
               </div>
             </div>
