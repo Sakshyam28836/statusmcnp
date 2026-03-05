@@ -246,6 +246,197 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // ─── HOURLY REPORT ───
+    if (action === "hourly_report") {
+      const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
+      if (!discordWebhookUrl) {
+        return new Response(JSON.stringify({ error: "No webhook" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
+
+      // Get current server status
+      const javaRes = await fetch(JAVA_API_URL);
+      const javaData = await javaRes.json();
+      const currentPlayers = javaData.players?.online || 0;
+      const maxPlayers = javaData.players?.max || 0;
+      const isOnline = javaData.online === true;
+
+      // Get 1-hour stats
+      const { data: hourStats } = await supabase.rpc("get_uptime_stats", { hours_back: 1 });
+      // Get 24-hour stats for context
+      const { data: dayStats } = await supabase.rpc("get_uptime_stats", { hours_back: 24 });
+      // Get 7-day stats
+      const { data: weekStats } = await supabase.rpc("get_uptime_stats", { hours_back: 168 });
+
+      const h = hourStats?.[0] || {};
+      const d = dayStats?.[0] || {};
+      const w = weekStats?.[0] || {};
+
+      const nepalTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu", dateStyle: "medium", timeStyle: "short" });
+
+      // Build capacity bar
+      const barLen = 10;
+      const filled = Math.round((currentPlayers / Math.max(maxPlayers, 1)) * barLen);
+      const capacityBar = "🟩".repeat(filled) + "⬛".repeat(barLen - filled);
+
+      // Uptime visual bar (24h)
+      const uptimePct24 = Number(d.uptime_percentage || 0);
+      const uptimeFilled = Math.round((uptimePct24 / 100) * barLen);
+      const uptimeBar = "🟦".repeat(uptimeFilled) + "⬛".repeat(barLen - uptimeFilled);
+
+      const embed = {
+        title: "⏰ Hourly Status Report",
+        description: `**MCNP Network** — Hourly server health summary`,
+        color: 0x6366f1,
+        fields: [
+          { name: "📡 Current Status", value: isOnline ? "🟢 **ONLINE**" : "🔴 **OFFLINE**", inline: true },
+          { name: "👥 Players Now", value: `**${currentPlayers}** / ${maxPlayers}`, inline: true },
+          { name: "📊 Capacity", value: capacityBar + ` (${maxPlayers > 0 ? Math.round((currentPlayers / maxPlayers) * 100) : 0}%)`, inline: false },
+          { name: "━━━ Last Hour ━━━", value: "\u200b", inline: false },
+          { name: "⬆️ Uptime", value: `${Number(h.uptime_percentage || 0).toFixed(1)}%`, inline: true },
+          { name: "👥 Avg Players", value: `${Number(h.avg_players || 0).toFixed(1)}`, inline: true },
+          { name: "🏆 Peak Players", value: `${h.max_players || 0}`, inline: true },
+          { name: "━━━ 24 Hour Overview ━━━", value: "\u200b", inline: false },
+          { name: "⬆️ Uptime (24h)", value: uptimeBar + ` ${uptimePct24.toFixed(1)}%`, inline: false },
+          { name: "👥 Avg Players", value: `${Number(d.avg_players || 0).toFixed(1)}`, inline: true },
+          { name: "🏆 Peak Players", value: `${d.max_players || 0}`, inline: true },
+          { name: "📡 Avg Ping", value: d.avg_ping ? `${Math.round(Number(d.avg_ping))}ms` : "N/A", inline: true },
+          { name: "━━━ 7 Day Overview ━━━", value: "\u200b", inline: false },
+          { name: "⬆️ Uptime (7d)", value: `${Number(w.uptime_percentage || 0).toFixed(1)}%`, inline: true },
+          { name: "👥 Avg Players", value: `${Number(w.avg_players || 0).toFixed(1)}`, inline: true },
+          { name: "🏆 Peak Players", value: `${w.max_players || 0}`, inline: true },
+          { name: "🕐 Nepal Time", value: nepalTime, inline: false },
+        ],
+        footer: { text: "MCNP Network • Hourly Report • Made by Sakshyam Paudel" },
+        timestamp: new Date().toISOString(),
+      };
+
+      await fetch(discordWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "MCNP Status Bot", avatar_url: "https://statusmcnp.lovable.app/favicon.png", embeds: [embed] }),
+      });
+
+      return new Response(JSON.stringify({ success: true, action: "hourly_report" }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
+    // ─── 24-HOUR DAILY REPORT (12 PM Nepal Time) ───
+    if (action === "daily_report") {
+      const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
+      if (!discordWebhookUrl) {
+        return new Response(JSON.stringify({ error: "No webhook" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
+
+      // Current server status
+      const javaRes = await fetch(JAVA_API_URL);
+      const javaData = await javaRes.json();
+      const currentPlayers = javaData.players?.online || 0;
+      const maxPlayers = javaData.players?.max || 0;
+      const isOnline = javaData.online === true;
+
+      // Ping measurement
+      const pingStart = performance.now();
+      await fetch(JAVA_API_URL, { method: "HEAD" }).catch(() => {});
+      const currentPing = Math.round(performance.now() - pingStart);
+
+      // Get 24h, 7d, 30d stats
+      const [res24, res7d, res30d] = await Promise.all([
+        supabase.rpc("get_uptime_stats", { hours_back: 24 }),
+        supabase.rpc("get_uptime_stats", { hours_back: 168 }),
+        supabase.rpc("get_uptime_stats", { hours_back: 720 }),
+      ]);
+
+      const s24 = res24.data?.[0] || {};
+      const s7d = res7d.data?.[0] || {};
+      const s30d = res30d.data?.[0] || {};
+
+      // Get hourly player breakdown for last 24h
+      const { data: hourlyData } = await supabase.rpc("get_hourly_player_stats", { hours_back: 24 });
+
+      // Build player history sparkline (last 12 hours shown)
+      const recentHours = (hourlyData || []).slice(-12);
+      const maxPeak = Math.max(...recentHours.map((h: { peak_players: number }) => h.peak_players || 0), 1);
+      const sparkline = recentHours.map((h: { peak_players: number }) => {
+        const ratio = (h.peak_players || 0) / maxPeak;
+        if (ratio > 0.75) return "█";
+        if (ratio > 0.5) return "▆";
+        if (ratio > 0.25) return "▃";
+        if (ratio > 0) return "▁";
+        return "░";
+      }).join("");
+
+      // Uptime rating
+      const uptime24 = Number(s24.uptime_percentage || 0);
+      let uptimeRating = "💀 Critical";
+      if (uptime24 >= 99) uptimeRating = "⭐ Excellent";
+      else if (uptime24 >= 95) uptimeRating = "✅ Good";
+      else if (uptime24 >= 90) uptimeRating = "⚠️ Fair";
+      else if (uptime24 >= 75) uptimeRating = "🟡 Poor";
+
+      const barLen = 15;
+      const uptimeFilled = Math.round((uptime24 / 100) * barLen);
+      const uptimeBar = "🟩".repeat(uptimeFilled) + "⬛".repeat(barLen - uptimeFilled);
+
+      const nepalTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu", dateStyle: "full", timeStyle: "short" });
+      const nepalDate = new Date().toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", dateStyle: "long" });
+
+      const embeds = [
+        {
+          title: "📋 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+          description: `# 🌟 MCNP Network — Daily Report\n**${nepalDate}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          color: 0xf59e0b,
+          fields: [
+            { name: "📡 Server Status", value: isOnline ? "```diff\n+ 🟢 ONLINE\n```" : "```diff\n- 🔴 OFFLINE\n```", inline: true },
+            { name: "🏓 Current Ping", value: `\`\`\`${currentPing}ms\`\`\``, inline: true },
+            { name: "👥 Players Online", value: `\`\`\`${currentPlayers} / ${maxPlayers}\`\`\``, inline: true },
+          ],
+          footer: { text: "Section 1/3 — Current Status" },
+        },
+        {
+          title: "📊 24-Hour Performance Summary",
+          description: `**Uptime Rating:** ${uptimeRating}\n${uptimeBar} **${uptime24.toFixed(2)}%**`,
+          color: 0x22c55e,
+          fields: [
+            { name: "━━━ 📈 Player Statistics (24h) ━━━", value: "\u200b", inline: false },
+            { name: "👥 Average Players", value: `\`\`\`${Number(s24.avg_players || 0).toFixed(1)}\`\`\``, inline: true },
+            { name: "🏆 Peak Players", value: `\`\`\`${s24.max_players || 0}\`\`\``, inline: true },
+            { name: "📡 Average Ping", value: `\`\`\`${s24.avg_ping ? Math.round(Number(s24.avg_ping)) + "ms" : "N/A"}\`\`\``, inline: true },
+            { name: "📋 Total Checks", value: `\`\`\`${s24.total_checks || 0}\`\`\``, inline: true },
+            { name: "✅ Online Checks", value: `\`\`\`${s24.online_checks || 0}\`\`\``, inline: true },
+            { name: "❌ Offline Checks", value: `\`\`\`${(Number(s24.total_checks || 0) - Number(s24.online_checks || 0))}\`\`\``, inline: true },
+            { name: "📊 Player Activity (Last 12 Hours)", value: `\`\`\`\n${sparkline || "No data"}\n\`\`\`\n${recentHours.map((h: { hour_label: string; peak_players: number }) => `\`${h.hour_label}\`: **${h.peak_players}** peak`).join(" • ") || "No data"}`, inline: false },
+          ],
+          footer: { text: "Section 2/3 — 24h Performance" },
+        },
+        {
+          title: "📅 Extended Statistics",
+          description: "Long-term server health overview",
+          color: 0x8b5cf6,
+          fields: [
+            { name: "━━━ 🗓️ 7-Day Stats ━━━", value: "\u200b", inline: false },
+            { name: "⬆️ Uptime", value: `**${Number(s7d.uptime_percentage || 0).toFixed(2)}%**`, inline: true },
+            { name: "👥 Avg Players", value: `**${Number(s7d.avg_players || 0).toFixed(1)}**`, inline: true },
+            { name: "🏆 Peak Players", value: `**${s7d.max_players || 0}**`, inline: true },
+            { name: "━━━ 📆 30-Day Stats ━━━", value: "\u200b", inline: false },
+            { name: "⬆️ Uptime", value: `**${Number(s30d.uptime_percentage || 0).toFixed(2)}%**`, inline: true },
+            { name: "👥 Avg Players", value: `**${Number(s30d.avg_players || 0).toFixed(1)}**`, inline: true },
+            { name: "🏆 Peak Players", value: `**${s30d.max_players || 0}**`, inline: true },
+            { name: "🕐 Report Generated", value: nepalTime, inline: false },
+            { name: "🔗 Live Dashboard", value: "[statusmcnp.lovable.app](https://statusmcnp.lovable.app)", inline: false },
+          ],
+          footer: { text: "MCNP Network • Daily Report • Made by Sakshyam Paudel" },
+          timestamp: new Date().toISOString(),
+        },
+      ];
+
+      await fetch(discordWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "MCNP Daily Report", avatar_url: "https://statusmcnp.lovable.app/favicon.png", embeds }),
+      });
+
+      return new Response(JSON.stringify({ success: true, action: "daily_report" }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
     return new Response(
       JSON.stringify({ error: "Invalid action" }),
       { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
