@@ -12,6 +12,7 @@ import PracticePvp from "./pages/PracticePvp";
 import SocialMedia from "./pages/SocialMedia";
 import Staff from "./pages/Staff";
 import Events from "./pages/Events";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
