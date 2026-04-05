@@ -262,6 +262,16 @@ export type Database = {
       aggregate_daily_uptime: { Args: never; Returns: undefined }
       aggregate_today_uptime: { Args: never; Returns: undefined }
       cleanup_old_status_history: { Args: never; Returns: undefined }
+      get_all_user_roles: {
+        Args: never
+        Returns: {
+          assigned_at: string
+          display_name: string
+          email: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
       get_hourly_player_stats: {
         Args: { hours_back?: number }
         Returns: {
@@ -290,6 +300,15 @@ export type Database = {
         Returns: boolean
       }
       is_nepal_new_day: { Args: { check_time: string }; Returns: boolean }
+      search_profiles_by_email: {
+        Args: { search_email: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
