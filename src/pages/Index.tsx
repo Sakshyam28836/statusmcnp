@@ -218,7 +218,7 @@ const Index = () => {
                 src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
                 width="100%" 
                 height="200" 
-                allowtransparency="true" 
+                {...({ allowtransparency: "true" } as any)} 
                 frameBorder="0" 
                 className="rounded-lg mt-2 sm:mt-3"
                 title="Discord Widget"
