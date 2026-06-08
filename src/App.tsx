@@ -6,8 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Survival from "./pages/Survival";
 import Lifesteal from "./pages/Lifesteal";
-import Bedwar from "./pages/Bedwar";
-import Anarchy from "./pages/Anarchy";
 import PracticePvp from "./pages/PracticePvp";
 import SocialMedia from "./pages/SocialMedia";
 import Staff from "./pages/Staff";
@@ -27,8 +25,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/survival" element={<Survival />} />
           <Route path="/lifesteal" element={<Lifesteal />} />
-          <Route path="/bedwar" element={<Bedwar />} />
-          <Route path="/anarchy" element={<Anarchy />} />
           <Route path="/practice-pvp" element={<PracticePvp />} />
           <Route path="/social" element={<SocialMedia />} />
           <Route path="/staff" element={<Staff />} />
