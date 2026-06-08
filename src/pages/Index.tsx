@@ -128,7 +128,7 @@ const Index = () => {
             <ServerCard
               title="Java Edition"
               serverData={javaStatus}
-              serverAddress="play.mcnpnetwork.com"
+              serverAddress="mcnp.network:1109"
               isLoading={isLoading}
             />
           </motion.div>
@@ -136,7 +136,7 @@ const Index = () => {
             <ServerCard
               title="Bedrock Edition"
               serverData={bedrockStatus}
-              serverAddress="bedrock.mcnpnetwork.com:1109"
+              serverAddress="bedrock.mcnpnetwork.com"
               isLoading={isLoading}
             />
           </motion.div>
