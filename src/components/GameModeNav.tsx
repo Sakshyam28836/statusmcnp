@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
-import { TreePine, Heart, Bed, Flame, Swords } from 'lucide-react';
+import { TreePine, Heart, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const gameModes = [
   { name: 'Survival', path: '/survival', icon: TreePine, color: 'text-success' },
   { name: 'Lifesteal', path: '/lifesteal', icon: Heart, color: 'text-destructive' },
-  { name: 'Bedwars', path: '/bedwar', icon: Bed, color: 'text-primary' },
-  { name: 'Anarchy', path: '/anarchy', icon: Flame, color: 'text-warning' },
   { name: 'Practice PvP', path: '/practice-pvp', icon: Swords, color: 'text-primary' },
 ];
 
