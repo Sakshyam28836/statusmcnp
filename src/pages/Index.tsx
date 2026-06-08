@@ -8,6 +8,7 @@ import { MonthlyUptimeChart } from '@/components/MonthlyUptimeChart';
 import { PlayerList } from '@/components/PlayerList';
 import { PlayerGraph } from '@/components/PlayerGraph';
 import { DailyPlayerStats } from '@/components/DailyPlayerStats';
+import { StatusTimeline } from '@/components/StatusTimeline';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { NavLink } from '@/components/NavLink';
