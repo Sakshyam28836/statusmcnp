@@ -128,7 +128,7 @@ const Index = () => {
             <ServerCard
               title="Java Edition"
               serverData={javaStatus}
-              serverAddress="mcnp.network:1109"
+              serverAddress="mcnp.network"
               isLoading={isLoading}
             />
           </motion.div>
@@ -136,7 +136,7 @@ const Index = () => {
             <ServerCard
               title="Bedrock Edition"
               serverData={bedrockStatus}
-              serverAddress="bedrock.mcnpnetwork.com"
+              serverAddress="bedrock.mcnpnetwork.com:19132"
               isLoading={isLoading}
             />
           </motion.div>
@@ -218,7 +218,7 @@ const Index = () => {
                 src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
                 width="100%" 
                 height="200" 
-                allowTransparency={true} 
+                {...({ allowtransparency: "true" } as any)} 
                 frameBorder="0" 
                 className="rounded-lg mt-2 sm:mt-3"
                 title="Discord Widget"

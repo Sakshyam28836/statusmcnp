@@ -11,7 +11,7 @@ const features = [
 
 const Lifesteal = () => {
   const [copied, setCopied] = useState(false);
-  const ip = 'mcnp.network:1109';
+  const ip = 'mcnp.network';
 
   const copy = async () => {
     await navigator.clipboard.writeText(ip);
