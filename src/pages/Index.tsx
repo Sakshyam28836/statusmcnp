@@ -136,7 +136,7 @@ const Index = () => {
             <ServerCard
               title="Bedrock Edition"
               serverData={bedrockStatus}
-              serverAddress="bedrock.mcnpnetwork.com:19132"
+              serverAddress="bedrock.mcnpnetwork.com:1109"
               isLoading={isLoading}
             />
           </motion.div>
