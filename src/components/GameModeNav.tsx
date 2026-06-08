@@ -12,7 +12,7 @@ export const GameModeNav = () => {
   return (
     <div className="minecraft-border rounded-xl bg-card p-6 card-glow">
       <h3 className="text-lg font-bold text-foreground mb-4">Game Modes</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {gameModes.map((mode) => (
           <Link
             key={mode.path}
