@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/mcnp.network';
-const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:19132';
+const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:1109';
 
 // Transform mcstatus.io response to our ServerStatus format
 // Transform mcstatus.io Java response
@@ -223,104 +223,88 @@ export const useServerStatus = (refreshInterval = 10000) => {
 
   const fetchStatus = useCallback(async () => {
     try {
-      // Measure ping to Java server specifically (single request, not doubled)
       const pingStart = performance.now();
-      const javaResponse = await fetch(JAVA_API_URL, { cache: 'no-store' });
+      const [javaRes, bedrockRes] = await Promise.allSettled([
+        fetch(JAVA_API_URL, { cache: 'no-store' }),
+        fetch(BEDROCK_API_URL, { cache: 'no-store' }),
+      ]);
       const pingEnd = performance.now();
-      
-      // This is the round-trip to the API, divide by 2 for approximate one-way
-      // and cap it to be more realistic
+
       const rawPing = Math.round(pingEnd - pingStart);
-      const estimatedPing = Math.min(rawPing, 500); // Cap at 500ms for display
-      setPingMs(estimatedPing);
+      setPingMs(Math.min(rawPing, 500));
 
-      const bedrockResponse = await fetch(BEDROCK_API_URL, { cache: 'no-store' });
+      let transformedJava: ServerStatus | null = null;
+      let transformedBedrock: ServerStatus | null = null;
 
-      if (!javaResponse.ok || !bedrockResponse.ok) {
-        throw new Error('API request failed');
+      if (javaRes.status === 'fulfilled' && javaRes.value.ok) {
+        try {
+          const data = await javaRes.value.json();
+          transformedJava = transformJavaResponse(data);
+        } catch (e) { console.warn('Java parse failed', e); }
+      }
+      if (bedrockRes.status === 'fulfilled' && bedrockRes.value.ok) {
+        try {
+          const data = await bedrockRes.value.json();
+          transformedBedrock = transformBedrockResponse(data);
+        } catch (e) { console.warn('Bedrock parse failed', e); }
       }
 
-      const javaData = await javaResponse.json();
-      const bedrockData = await bedrockResponse.json();
+      // Keep previous state if a fetch fails - don't blank the UI
+      if (transformedJava) setJavaStatus(transformedJava);
+      if (transformedBedrock) setBedrockStatus(transformedBedrock);
 
-      const transformedJava = transformJavaResponse(javaData);
-      const transformedBedrock = transformBedrockResponse(bedrockData);
+      // Use whatever we have for status determination; if both failed, keep previous status
+      const effectiveJava = transformedJava ?? javaStatus;
+      if (!effectiveJava && !transformedBedrock) {
+        // Total failure: don't crash, just mark check time
+        setLastChecked(new Date());
+        setError('Status APIs unreachable');
+        return;
+      }
 
-      setJavaStatus(transformedJava);
-      setBedrockStatus(transformedBedrock);
-      
-      const isOnline = transformedJava.online;
-      const javaPlayers = transformedJava.players?.online || 0;
-      const javaMaxPlayers = transformedJava.players?.max || 0;
+      const isOnline = effectiveJava?.online ?? false;
+      const javaPlayers = effectiveJava?.players?.online || 0;
+      const javaMaxPlayers = effectiveJava?.players?.max || 0;
       const newStatus: StatusType = isOnline ? 'online' : 'offline';
-      
-      // Status is saved by server-side cron only - no client-side DB writes
-      
-      // Check for status change and send notifications
+
       if (!isFirstFetch.current && previousStatus.current !== 'checking' && previousStatus.current !== newStatus) {
-        // Browser notification
         if (newStatus === 'online') {
           sendBrowserNotification('🟢 MCNP Network is Online!', 'The server is now online. Join now!');
         } else {
           sendBrowserNotification('🔴 MCNP Network is Offline', 'The server has gone offline.');
         }
-        
-        // Discord webhook notification
-        sendDiscordStatusNotification(
-          newStatus === 'online' ? 'online' : 'offline',
-          javaPlayers,
-          javaMaxPlayers
-        );
-
-        // Email notification on status change
-        sendEmailNotification(
-          newStatus === 'online' ? 'online' : 'offline',
-          javaPlayers
-        );
+        sendDiscordStatusNotification(newStatus, javaPlayers, javaMaxPlayers);
+        sendEmailNotification(newStatus, javaPlayers);
       }
-      
-      // Send Discord stats update every 10 minutes (only when online)
+
       if (isOnline) {
         const stats = await fetchUptimeStats();
-        sendDiscordStatsUpdate(
-          javaPlayers,
-          javaMaxPlayers,
-          stats?.uptime,
-          stats?.avgPing
-        );
+        sendDiscordStatsUpdate(javaPlayers, javaMaxPlayers, stats?.uptime, stats?.avgPing);
       }
-      
+
       previousStatus.current = newStatus;
       setStatus(newStatus);
       setLastChecked(new Date());
-      
-      // Update local uptime history
+
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
           timestamp: new Date(),
           status: isOnline ? 'online' : 'offline',
-          players: javaPlayers
+          players: javaPlayers,
         };
-        const updated = [...prev, newEntry].slice(-100);
-        return updated;
+        return [...prev, newEntry].slice(-100);
       });
 
       setError(null);
     } catch (err) {
       console.error('Failed to fetch server status:', err);
       setError('Failed to fetch server status');
-      setPingMs(null);
-      
-      if (isFirstFetch.current) {
-        setStatus('offline');
-      }
-      
-      // Don't write to DB from client - cron handles this
+      // Do NOT flip to offline on transient client errors
     } finally {
       setIsLoading(false);
       isFirstFetch.current = false;
     }
-  }, [sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
+  }, [javaStatus, sendBrowserNotification, sendDiscordStatusNotification, sendDiscordStatsUpdate, sendEmailNotification, fetchUptimeStats]);
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {
