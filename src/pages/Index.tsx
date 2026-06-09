@@ -11,8 +11,8 @@ import { DailyPlayerStats } from '@/components/DailyPlayerStats';
 import { StatusTimeline } from '@/components/StatusTimeline';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
-import { NavLink } from '@/components/NavLink';
-import { Users, Clock, Wifi, Activity, Share2, UserCircle, CalendarDays } from 'lucide-react';
+import { Users, Clock, Wifi, Activity } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 
 const fadeUp = {
