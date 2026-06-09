@@ -218,25 +218,14 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8 items-stretch"
         >
-          <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="h-full">
             <DiscordWidget inviteLink="https://discord.gg/XeC2sMsazu" />
-            
-            <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-3 sm:p-4 lg:p-6">
-              <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2">Community Discord</h3>
-              <iframe 
-                src="https://discord.com/widget?id=1342166321756115005&theme=light" 
-                width="100%" 
-                height="200" 
-                {...({ allowtransparency: "true" } as any)} 
-                frameBorder="0" 
-                className="rounded-lg mt-2 sm:mt-3"
-                title="Discord Widget"
-              ></iframe>
-            </div>
           </div>
-          <GameModeNav />
+          <div className="h-full">
+            <GameModeNav />
+          </div>
         </motion.section>
 
         {/* Footer */}
