@@ -1,5 +1,6 @@
-import { RefreshCw, Bell, BellOff } from 'lucide-react';
+import { RefreshCw, Bell, BellOff, Sun, Moon } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { useTheme } from '@/hooks/useTheme';
 import { StatusType } from '@/types/server';
 import { cn } from '@/lib/utils';
 import mcnpLogo from '@/assets/mcnp-logo.png';
@@ -22,6 +23,7 @@ export const Header = ({
   notificationsEnabled,
   onEnableNotifications 
 }: HeaderProps) => {
+  const { theme, toggleTheme } = useTheme();
   return (
     <header className="relative py-8 px-4 overflow-hidden">
       {/* Animated background glow */}
@@ -102,6 +104,17 @@ export const Header = ({
                 Enable Alerts
               </>
             )}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-all"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </motion.button>
         </motion.div>
 
