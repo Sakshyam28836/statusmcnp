@@ -53,26 +53,6 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 sm:pb-12">
-        {/* Navigation Links */}
-        <motion.nav 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8"
-        >
-          <NavLink to="/social" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all hover:scale-105">
-            <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Social Media</span>
-          </NavLink>
-          <NavLink to="/staff" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all hover:scale-105">
-            <UserCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Staff</span>
-          </NavLink>
-          <NavLink to="/events" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary hover:bg-secondary/80 rounded-full text-xs sm:text-sm font-medium transition-all hover:scale-105">
-            <CalendarDays className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Events</span>
-          </NavLink>
-        </motion.nav>
 
         {/* Stats Cards */}
         <motion.section 
