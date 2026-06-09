@@ -42,7 +42,7 @@ const Index = () => {
   const maxPlayers = javaStatus?.players?.max || 0;
 
   return (
-    <div className="min-h-screen bg-background bg-grid-pattern">
+    <div className="min-h-screen bg-background">
       <Header 
         status={status}
         lastChecked={lastChecked}
