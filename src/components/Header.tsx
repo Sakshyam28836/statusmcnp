@@ -1,5 +1,6 @@
-import { RefreshCw, Bell, BellOff } from 'lucide-react';
+import { RefreshCw, Bell, BellOff, Sun, Moon } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { useTheme } from '@/hooks/useTheme';
 import { StatusType } from '@/types/server';
 import { cn } from '@/lib/utils';
 import mcnpLogo from '@/assets/mcnp-logo.png';
