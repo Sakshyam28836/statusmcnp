@@ -215,9 +215,6 @@ const Index = () => {
           transition={{ delay: 0.6 }}
           className="text-center py-4 sm:py-6 lg:py-8 border-t border-border mt-4 sm:mt-6"
         >
-          <p className="text-muted-foreground text-[10px] sm:text-xs lg:text-sm">
-            Auto-refreshes every 10 seconds • Real-time status via mcstatus.io
-          </p>
           <p className="text-primary font-medium mt-1.5 sm:mt-2 text-xs sm:text-sm lg:text-base">
             Powered by MCNP Network
           </p>
