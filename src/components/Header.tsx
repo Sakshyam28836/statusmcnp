@@ -112,14 +112,6 @@ export const Header = ({
           </motion.button>
         </motion.div>
 
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-muted-foreground text-xs mt-4"
-        >
-          Last checked: {lastChecked.toLocaleTimeString()} • Auto-updates every 10s
-        </motion.p>
       </div>
     </header>
   );
