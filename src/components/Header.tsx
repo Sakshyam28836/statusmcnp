@@ -54,14 +54,8 @@ export const Header = ({
           />
         </motion.div>
         
-        <motion.p 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-muted-foreground text-lg mb-6"
-        >
-          Real-time Minecraft Server Status
-        </motion.p>
+        
+
 
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
