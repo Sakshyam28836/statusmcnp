@@ -23,6 +23,7 @@ export const Header = ({
   notificationsEnabled,
   onEnableNotifications 
 }: HeaderProps) => {
+  const { theme, toggleTheme } = useTheme();
   return (
     <header className="relative py-8 px-4 overflow-hidden">
       {/* Animated background glow */}
