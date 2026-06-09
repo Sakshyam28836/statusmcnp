@@ -152,9 +152,6 @@
 
 @layer utilities {
   .bg-grid-pattern {
-    background-image: 
-      linear-gradient(hsl(220 14% 12% / 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(220 14% 12% / 0.5) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-image: none;
   }
 }
