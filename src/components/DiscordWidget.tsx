@@ -6,7 +6,7 @@ interface DiscordWidgetProps {
 
 export const DiscordWidget = ({ inviteLink = 'https://discord.gg/mcnpnetwork' }: DiscordWidgetProps) => {
   return (
-    <div className="minecraft-border rounded-xl bg-card p-6 card-glow">
+    <div className="minecraft-border rounded-xl bg-card p-6 card-glow h-full flex flex-col">
       <div className="flex items-center gap-3 mb-4">
         <div className="p-3 rounded-lg bg-[#5865F2]/20">
           <MessageCircle className="w-6 h-6 text-[#5865F2]" />
