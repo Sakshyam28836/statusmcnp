@@ -42,7 +42,7 @@ const Index = () => {
   const maxPlayers = javaStatus?.players?.max || 0;
 
   return (
-    <div className="min-h-screen bg-background bg-grid-pattern">
+    <div className="min-h-screen bg-background">
       <Header 
         status={status}
         lastChecked={lastChecked}
@@ -226,7 +226,7 @@ const Index = () => {
             <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-3 sm:p-4 lg:p-6">
               <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-2">Community Discord</h3>
               <iframe 
-                src="https://discord.com/widget?id=1342166321756115005&theme=dark" 
+                src="https://discord.com/widget?id=1342166321756115005&theme=light" 
                 width="100%" 
                 height="200" 
                 {...({ allowtransparency: "true" } as any)} 
