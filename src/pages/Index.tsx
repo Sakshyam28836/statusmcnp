@@ -59,9 +59,9 @@ const Index = () => {
           variants={stagger}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8 items-stretch"
         >
-          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="h-full">
             <StatsCard
               icon={Users}
               label="Java Players"
@@ -70,7 +70,7 @@ const Index = () => {
               variant={totalPlayers > 0 ? 'success' : 'default'}
             />
           </motion.div>
-          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="h-full">
             <StatsCard
               icon={Activity}
               label="Server Status"
@@ -78,7 +78,7 @@ const Index = () => {
               variant={status === 'online' ? 'success' : status === 'offline' ? 'destructive' : 'warning'}
             />
           </motion.div>
-          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="h-full">
             <StatsCard
               icon={Wifi}
               label="Java Edition"
@@ -87,7 +87,7 @@ const Index = () => {
               variant={javaStatus?.online ? 'success' : 'destructive'}
             />
           </motion.div>
-          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="h-full">
             <StatsCard
               icon={Clock}
               label="Bedrock Edition"
@@ -103,9 +103,9 @@ const Index = () => {
           variants={stagger}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8 items-stretch"
         >
-          <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="h-full">
             <ServerCard
               title="Java Edition"
               serverData={javaStatus}
@@ -113,7 +113,7 @@ const Index = () => {
               isLoading={isLoading}
             />
           </motion.div>
-          <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="h-full">
             <ServerCard
               title="Bedrock Edition"
               serverData={bedrockStatus}
