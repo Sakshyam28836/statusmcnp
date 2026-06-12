@@ -25,21 +25,14 @@ export const StatsCard = ({ icon: Icon, label, value, subtext, variant = 'defaul
     destructive: 'text-destructive',
   };
 
-  const glowStyles = {
-    default: '',
-    success: 'hover:shadow-[0_0_20px_hsl(var(--success)/0.15)]',
-    warning: 'hover:shadow-[0_0_20px_hsl(var(--warning)/0.15)]',
-    destructive: 'hover:shadow-[0_0_20px_hsl(var(--destructive)/0.15)]',
-  };
-
   const isNumber = typeof value === 'number';
 
   return (
     <div className={cn(
-      "minecraft-border rounded-xl bg-card p-3 sm:p-5 card-glow transition-colors duration-300 cursor-default h-full",
-      variantStyles[variant],
-      glowStyles[variant]
+      "minecraft-border rounded-xl bg-card p-3 sm:p-5 card-glow cursor-default h-full",
+      variantStyles[variant]
     )}>
+
       <div className="flex items-start gap-2 sm:gap-4">
         <div className={cn(
           "p-2 sm:p-3 rounded-lg bg-muted transition-colors",

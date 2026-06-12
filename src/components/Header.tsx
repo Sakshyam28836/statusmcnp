@@ -4,7 +4,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { StatusType } from '@/types/server';
 import { cn } from '@/lib/utils';
 import mcnpLogo from '@/assets/mcnp-logo.png';
-import { motion } from 'framer-motion';
 
 interface HeaderProps {
   status: StatusType;
@@ -17,66 +16,42 @@ interface HeaderProps {
 
 export const Header = ({ 
   status, 
-  lastChecked, 
   onRefresh, 
   isLoading, 
-  notificationsEnabled,
-  onEnableNotifications 
 }: HeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   return (
-    <header className="relative py-8 px-4">
-
-      
-      <div className="relative max-w-4xl mx-auto text-center">
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-          className="flex items-center justify-center mb-4"
-        >
+    <header className="py-6 sm:py-8 px-4">
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="flex items-center justify-center mb-4">
           <img 
             src={mcnpLogo} 
             alt="MCNP Network" 
-            className="h-24 md:h-32 object-contain drop-shadow-[0_0_30px_hsl(var(--primary)/0.4)]"
+            className="h-20 sm:h-24 md:h-32 object-contain"
           />
-        </motion.div>
-        
-        
+        </div>
 
-
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-3"
-        >
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           <StatusBadge status={status} />
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+
+          <button
             onClick={onRefresh}
             disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-colors disabled:opacity-50"
           >
             <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
             Refresh
-          </motion.button>
+          </button>
 
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-foreground text-sm font-medium transition-colors"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             {theme === 'dark' ? 'Light' : 'Dark'}
-          </motion.button>
-        </motion.div>
-
+          </button>
+        </div>
       </div>
     </header>
   );
