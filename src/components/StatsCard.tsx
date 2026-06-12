@@ -36,7 +36,7 @@ export const StatsCard = ({ icon: Icon, label, value, subtext, variant = 'defaul
 
   return (
     <div className={cn(
-      "minecraft-border rounded-xl bg-card p-3 sm:p-5 card-glow transition-all duration-300 hover:scale-[1.03] cursor-default",
+      "minecraft-border rounded-xl bg-card p-3 sm:p-5 card-glow transition-colors duration-300 cursor-default h-full",
       variantStyles[variant],
       glowStyles[variant]
     )}>

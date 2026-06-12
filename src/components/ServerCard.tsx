@@ -32,7 +32,7 @@ export const ServerCard = ({ title, serverData, serverAddress, isLoading }: Serv
 
   if (isLoading) {
     return (
-      <div className="minecraft-border rounded-xl bg-card p-6 card-glow">
+      <div className="minecraft-border rounded-xl bg-card p-6 card-glow h-full">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-muted rounded w-1/3" />
           <div className="h-4 bg-muted rounded w-1/2" />
@@ -44,7 +44,7 @@ export const ServerCard = ({ title, serverData, serverAddress, isLoading }: Serv
 
   return (
     <div className={cn(
-      "minecraft-border rounded-xl bg-card p-6 card-glow transition-all duration-300 hover:scale-[1.02]",
+      "minecraft-border rounded-xl bg-card p-6 card-glow transition-colors duration-300 h-full flex flex-col",
       serverData?.online ? "border-success/20" : "border-destructive/20"
     )}>
       <div className="flex items-center justify-between mb-4">
