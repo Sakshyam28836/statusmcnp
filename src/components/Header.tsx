@@ -1,4 +1,4 @@
-import { RefreshCw, Bell, BellOff, Sun, Moon } from 'lucide-react';
+import { RefreshCw, Sun, Moon } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useTheme } from '@/hooks/useTheme';
 import { StatusType } from '@/types/server';
@@ -76,29 +76,6 @@ export const Header = ({
             Refresh
           </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onEnableNotifications}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
-              notificationsEnabled 
-                ? "bg-success/20 text-success border border-success/30" 
-                : "bg-secondary hover:bg-secondary/80 text-foreground"
-            )}
-          >
-            {notificationsEnabled ? (
-              <>
-                <Bell className="w-4 h-4" />
-                Alerts On
-              </>
-            ) : (
-              <>
-                <BellOff className="w-4 h-4" />
-                Enable Alerts
-              </>
-            )}
-          </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
