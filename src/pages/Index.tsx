@@ -123,15 +123,8 @@ const Index = () => {
           </motion.div>
         </motion.section>
 
-        {/* Player List */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-4 sm:mb-6 lg:mb-8"
-        >
-          <PlayerList javaStatus={javaStatus} bedrockStatus={null} />
-        </motion.section>
+
+
 
         {/* Database-backed Uptime Stats */}
         <motion.section 

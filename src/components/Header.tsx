@@ -25,20 +25,8 @@ export const Header = ({
 }: HeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   return (
-    <header className="relative py-8 px-4 overflow-hidden">
-      {/* Animated background glow */}
-      <motion.div
-        animate={{
-          opacity: [0.2, 0.4, 0.2],
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        className={cn(
-          "absolute inset-0 transition-all duration-500",
-          status === 'online' ? 'bg-[radial-gradient(ellipse_at_top,hsl(var(--success)/0.3)_0%,transparent_50%)]' : 
-          status === 'offline' ? 'bg-[radial-gradient(ellipse_at_top,hsl(var(--destructive)/0.3)_0%,transparent_50%)]' :
-          'bg-[radial-gradient(ellipse_at_top,hsl(var(--warning)/0.3)_0%,transparent_50%)]'
-        )}
-      />
+    <header className="relative py-8 px-4">
+
       
       <div className="relative max-w-4xl mx-auto text-center">
         <motion.div 
