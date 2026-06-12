@@ -37,7 +37,7 @@ export const DiscordWidget = ({ inviteLink = 'https://discord.gg/mcnpnetwork' }:
           href={inviteLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-lg font-medium transition-all hover:scale-[1.02]"
+          className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-lg font-medium transition-colors"
         >
           <MessageCircle className="w-5 h-5" />
           Join Discord Server

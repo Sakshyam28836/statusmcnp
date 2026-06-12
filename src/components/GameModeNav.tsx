@@ -17,9 +17,9 @@ export const GameModeNav = () => {
           <Link
             key={mode.path}
             to={mode.path}
-            className="group flex flex-col items-center gap-2 p-4 bg-secondary/50 rounded-lg hover:bg-secondary transition-all hover:scale-105"
+            className="group flex flex-col items-center gap-2 p-4 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
           >
-            <mode.icon className={cn("w-8 h-8 transition-transform group-hover:scale-110", mode.color)} />
+            <mode.icon className={cn("w-8 h-8", mode.color)} />
             <span className="text-sm font-medium text-foreground text-center">{mode.name}</span>
             <span className="text-xs text-success">Released</span>
           </Link>
