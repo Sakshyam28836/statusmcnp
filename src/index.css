@@ -97,9 +97,14 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
   }
+
+  img, svg { display: block; max-width: 100%; }
 
 
   .font-mono {
