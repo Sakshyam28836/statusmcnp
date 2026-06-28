@@ -1,4 +1,4 @@
-import { RefreshCw, Sun, Moon } from 'lucide-react';
+import { RefreshCw, Sun, Moon, ExternalLink } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useTheme } from '@/hooks/useTheme';
 import { StatusType } from '@/types/server';
@@ -51,6 +51,16 @@ export const Header = ({
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
+
+          <a
+            href="https://mcnp.network"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-full text-primary-foreground text-sm font-medium transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Visit Website
+          </a>
         </div>
       </div>
     </header>

@@ -8,6 +8,7 @@ import { MonthlyUptimeChart } from '@/components/MonthlyUptimeChart';
 import { PlayerGraph } from '@/components/PlayerGraph';
 import { DailyPlayerStats } from '@/components/DailyPlayerStats';
 import { StatusTimeline } from '@/components/StatusTimeline';
+import { ServerIPCard } from '@/components/ServerIPCard';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { Users, Clock, Wifi, Activity } from 'lucide-react';
@@ -86,6 +87,11 @@ const Index = () => {
             serverAddress="bedrock.mcnpnetwork.com:1109"
             isLoading={isLoading}
           />
+        </section>
+
+        {/* Server IPs */}
+        <section className="mb-4 sm:mb-6 lg:mb-8">
+          <ServerIPCard />
         </section>
 
         {/* Database-backed Uptime Stats */}
