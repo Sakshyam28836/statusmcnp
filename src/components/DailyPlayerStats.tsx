@@ -100,22 +100,24 @@ export const DailyPlayerStats = () => {
     <div className="minecraft-border rounded-xl bg-card p-4 sm:p-6 card-glow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
         <div className="flex items-center gap-3">
-          <CalendarDays className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <CalendarDays className="w-5 h-5 text-primary" />
+          </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Daily Player Stats</h3>
             <p className="text-xs text-muted-foreground">Last 7 days • Nepal Time</p>
           </div>
         </div>
-        
+
         {/* Weekly Summary Pills */}
         <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 bg-success/10 text-success border border-success/20 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
             <TrendingUp className="w-3 h-3" />
-            <span>Week Peak: {weeklyTotals.peakPlayers}</span>
+            <span>Week Peak {weeklyTotals.peakPlayers}</span>
           </div>
-          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
             <Users className="w-3 h-3" />
-            <span>Week Avg: {weeklyTotals.avgPlayers}</span>
+            <span>Week Avg {weeklyTotals.avgPlayers}</span>
           </div>
         </div>
       </div>
