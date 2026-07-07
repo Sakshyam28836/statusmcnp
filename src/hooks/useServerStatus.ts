@@ -3,8 +3,8 @@ import { ServerStatus, StatusType, ServerHistory } from '@/types/server';
 import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
-const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/mcnp.network';
-const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:1109';
+const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/mcnp.network:1667';
+const BEDROCK_API_URL = 'https://api.mcsrvstat.us/bedrock/3/bedrock.mcnp.network:1667';
 
 // Transform mcstatus.io response to our ServerStatus format
 // Transform mcstatus.io Java response

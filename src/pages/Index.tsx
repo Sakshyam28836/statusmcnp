@@ -68,7 +68,7 @@ const Index = () => {
             icon={Clock}
             label="Bedrock Edition"
             value={bedrockStatus?.online ? 'Online' : 'Offline'}
-            subtext="Port: 1109"
+            subtext="Port: 1667"
             variant={bedrockStatus?.online ? 'success' : 'destructive'}
           />
         </section>
@@ -78,13 +78,13 @@ const Index = () => {
           <ServerCard
             title="Java Edition"
             serverData={javaStatus}
-            serverAddress="mcnp.network"
+            serverAddress="mcnp.network:1667"
             isLoading={isLoading}
           />
           <ServerCard
             title="Bedrock Edition"
             serverData={bedrockStatus}
-            serverAddress="bedrock.mcnpnetwork.com:1109"
+            serverAddress="bedrock.mcnp.network:1667"
             isLoading={isLoading}
           />
         </section>
