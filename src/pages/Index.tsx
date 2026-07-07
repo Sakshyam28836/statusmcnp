@@ -11,7 +11,7 @@ import { StatusTimeline } from '@/components/StatusTimeline';
 import { ServerIPCard } from '@/components/ServerIPCard';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
-import { Users, Clock, Wifi, Activity } from 'lucide-react';
+import { Users, Clock, Wifi, Activity, AlertCircle, Loader2 } from 'lucide-react';
 
 const Index = () => {
   const { 
@@ -20,6 +20,7 @@ const Index = () => {
     status, 
     lastChecked, 
     isLoading, 
+    error,
     notificationsEnabled,
     enableNotifications,
     pingMs,
@@ -41,6 +42,29 @@ const Index = () => {
       />
 
       <main className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 sm:pb-12">
+
+        {/* Live status banner: loading or error */}
+        {error ? (
+          <div className="mb-4 flex items-center justify-between gap-2 p-3 rounded-lg border border-destructive/30 bg-destructive/10 text-sm">
+            <div className="flex items-center gap-2 text-destructive min-w-0">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">Couldn't reach the status API. Showing last known data.</span>
+            </div>
+            <button
+              onClick={refetch}
+              className="shrink-0 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : isLoading && !javaStatus && !bedrockStatus ? (
+          <div className="mb-4 flex items-center gap-2 p-3 rounded-lg border border-border bg-secondary/40 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+            <span>Fetching live server status…</span>
+          </div>
+        ) : null}
+
+
 
         {/* Stats Cards */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8 items-stretch">
