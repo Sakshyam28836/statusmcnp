@@ -7,9 +7,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const JAVA_API_URL = "https://api.mcstatus.io/v2/status/java/play.mcnpnetwork.com:1109";
+const SERVER_ADDRESS = "play.mcnpnetwork.com:1667";
+const BEDROCK_ADDRESS = "bedrock.mcnpnetwork.com:1667";
+const JAVA_API_URL = `https://api.mcstatus.io/v2/status/java/${SERVER_ADDRESS}`;
 // Use mcsrvstat.us for Bedrock - more reliable for Bedrock edition
-const BEDROCK_API_URL = "https://api.mcsrvstat.us/bedrock/3/bedrock.mcnpnetwork.com:1109";
+const BEDROCK_API_URL = `https://api.mcsrvstat.us/bedrock/3/${BEDROCK_ADDRESS}`;
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -89,6 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
               { name: "📊 Status", value: isOnline ? "✅ Online" : "❌ Offline", inline: true },
               ...(isOnline ? [{ name: "👥 Players", value: `${javaPlayers}/${javaMaxPlayers}`, inline: true }] : []),
               { name: "🕐 Time (Nepal)", value: nepalTime, inline: true },
+              { name: "🌐 Server IP", value: `\`${SERVER_ADDRESS}\``, inline: false },
             ],
             footer: { text: "MCNP Network Status Monitor" },
             timestamp: new Date().toISOString(),
@@ -224,6 +227,7 @@ const handler = async (req: Request): Promise<Response> => {
             { name: "👥 Avg Players (24h)", value: `${Number(stats.avg_players).toFixed(1)}`, inline: true },
             { name: "🏆 Peak Players (24h)", value: `${stats.max_players}`, inline: true },
             { name: "🕐 Time (Nepal)", value: nepalTime, inline: true },
+            { name: "🌐 Server IP", value: `\`${SERVER_ADDRESS}\``, inline: false },
           ],
           footer: { text: "MCNP Network • Updates every 5 minutes. Made by Sakshyam Paudel." },
           timestamp: new Date().toISOString(),
@@ -305,6 +309,7 @@ const handler = async (req: Request): Promise<Response> => {
           { name: "👥 Avg Players", value: `${Number(w.avg_players || 0).toFixed(1)}`, inline: true },
           { name: "🏆 Peak Players", value: `${w.max_players || 0}`, inline: true },
           { name: "🕐 Nepal Time", value: nepalTime, inline: false },
+          { name: "🌐 Server IP", value: `\`${SERVER_ADDRESS}\` • Bedrock: \`${BEDROCK_ADDRESS}\``, inline: false },
         ],
         footer: { text: "MCNP Network • Hourly Report • Made by Sakshyam Paudel" },
         timestamp: new Date().toISOString(),
