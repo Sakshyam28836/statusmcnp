@@ -325,6 +325,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     bedrockStatus,
     status,
     lastChecked,
+    lastSuccess,
     isLoading,
     error,
     uptimeHistory,

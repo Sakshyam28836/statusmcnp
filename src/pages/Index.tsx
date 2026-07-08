@@ -19,6 +19,7 @@ const Index = () => {
     bedrockStatus, 
     status, 
     lastChecked, 
+    lastSuccess,
     isLoading, 
     error,
     notificationsEnabled,
@@ -45,17 +46,33 @@ const Index = () => {
 
         {/* Live status banner: loading or error */}
         {error ? (
-          <div className="mb-4 flex items-center justify-between gap-2 p-3 rounded-lg border border-destructive/30 bg-destructive/10 text-sm">
-            <div className="flex items-center gap-2 text-destructive min-w-0">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span className="truncate">Couldn't reach the status API. Showing last known data.</span>
+          <div className="mb-4 p-3 rounded-lg border border-destructive/30 bg-destructive/10 text-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2 text-destructive min-w-0">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-medium truncate">Couldn't reach the status API. Showing last known data.</p>
+                  <p className="text-[11px] sm:text-xs text-destructive/80 mt-1 break-words">
+                    {error}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+                    Last successful check:{' '}
+                    {lastSuccess
+                      ? `${lastSuccess.toLocaleTimeString()} (${Math.max(
+                          0,
+                          Math.round((Date.now() - lastSuccess.getTime()) / 1000)
+                        )}s ago)`
+                      : 'never this session'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={refetch}
+                className="shrink-0 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
+              >
+                Retry
+              </button>
             </div>
-            <button
-              onClick={refetch}
-              className="shrink-0 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
-            >
-              Retry
-            </button>
           </div>
         ) : isLoading && !javaStatus && !bedrockStatus ? (
           <div className="mb-4 flex items-center gap-2 p-3 rounded-lg border border-border bg-secondary/40 text-sm text-muted-foreground">
