@@ -69,6 +69,11 @@ const handler = async (req: Request): Promise<Response> => {
             name: "🕐 Time (Nepal)",
             value: nepalTime,
             inline: true
+          },
+          {
+            name: "🌐 Server IP",
+            value: "`play.mcnpnetwork.com:1667`",
+            inline: false
           }
         ],
         footer: {
@@ -100,6 +105,11 @@ const handler = async (req: Request): Promise<Response> => {
           {
             name: "🕐 Time (Nepal)",
             value: nepalTime,
+            inline: false
+          },
+          {
+            name: "🌐 Server IP",
+            value: "`play.mcnpnetwork.com:1667`",
             inline: false
           }
         ],

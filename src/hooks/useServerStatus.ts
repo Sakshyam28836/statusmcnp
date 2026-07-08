@@ -67,6 +67,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
   const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pingMs, setPingMs] = useState<number | null>(null);
@@ -258,7 +259,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       if (!effectiveJava && !transformedBedrock) {
         // Total failure: don't crash, just mark check time
         setLastChecked(new Date());
-        setError('Status APIs unreachable');
+        setError('Status APIs unreachable. Both Java and Bedrock status endpoints failed to respond.');
         return;
       }
 
@@ -284,11 +285,13 @@ export const useServerStatus = (refreshInterval = 10000) => {
 
       previousStatus.current = newStatus;
       setStatus(newStatus);
-      setLastChecked(new Date());
+      const nowTs = new Date();
+      setLastChecked(nowTs);
+      setLastSuccess(nowTs);
 
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
-          timestamp: new Date(),
+          timestamp: nowTs,
           status: isOnline ? 'online' : 'offline',
           players: javaPlayers,
         };
@@ -298,7 +301,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setError(null);
     } catch (err) {
       console.error('Failed to fetch server status:', err);
-      setError('Failed to fetch server status');
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Failed to fetch server status: ${msg}`);
       // Do NOT flip to offline on transient client errors
     } finally {
       setIsLoading(false);
@@ -321,6 +325,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     bedrockStatus,
     status,
     lastChecked,
+    lastSuccess,
     isLoading,
     error,
     uptimeHistory,
