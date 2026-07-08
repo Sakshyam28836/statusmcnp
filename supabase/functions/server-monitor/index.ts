@@ -425,6 +425,7 @@ const handler = async (req: Request): Promise<Response> => {
             { name: "⬆️ Uptime", value: `**${Number(s30d.uptime_percentage || 0).toFixed(2)}%**`, inline: true },
             { name: "👥 Avg Players", value: `**${Number(s30d.avg_players || 0).toFixed(1)}**`, inline: true },
             { name: "🏆 Peak Players", value: `**${s30d.max_players || 0}**`, inline: true },
+            { name: "🌐 Server IP", value: `Java: \`${SERVER_ADDRESS}\`\nBedrock: \`${BEDROCK_ADDRESS}\``, inline: false },
             { name: "🕐 Report Generated", value: nepalTime, inline: false },
             { name: "🔗 Live Dashboard", value: "[mcnpstatus.netlify.app](https://mcnpstatus.netlify.app)", inline: false },
           ],
