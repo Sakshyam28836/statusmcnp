@@ -67,6 +67,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
   const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pingMs, setPingMs] = useState<number | null>(null);
@@ -258,7 +259,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
       if (!effectiveJava && !transformedBedrock) {
         // Total failure: don't crash, just mark check time
         setLastChecked(new Date());
-        setError('Status APIs unreachable');
+        setError('Status APIs unreachable. Both Java and Bedrock status endpoints failed to respond.');
         return;
       }
 
