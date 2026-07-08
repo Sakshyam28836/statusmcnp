@@ -50,6 +50,8 @@ export const StatusTimeline = () => {
       try {
         const hours = PERIODS.find((p) => p.key === period)!.hours;
         const since = new Date(Date.now() - hours * 3600_000).toISOString();
+
+        // Fetch rows inside the window
         const { data, error: err } = await supabase
           .from('server_status_history')
           .select('id, timestamp, is_online')
@@ -59,14 +61,33 @@ export const StatusTimeline = () => {
 
         if (cancelled) return;
         if (err) {
-          setError('Failed to load timeline');
+          setError(err.message || 'Failed to load timeline');
           setRows([]);
-        } else {
-          setRows((data || []) as Row[]);
+          return;
         }
-      } catch {
+
+        // Fetch the single row immediately before the window so we know the
+        // starting state (fixes early-segment uptime/timeline glitches).
+        const { data: priorData } = await supabase
+          .from('server_status_history')
+          .select('id, timestamp, is_online')
+          .lt('timestamp', since)
+          .order('timestamp', { ascending: false })
+          .limit(1);
+
+        if (cancelled) return;
+
+        const combined: Row[] = [];
+        if (priorData && priorData.length > 0) {
+          const p = priorData[0] as Row;
+          // Anchor at windowStart with the prior status
+          combined.push({ ...p, timestamp: since });
+        }
+        combined.push(...((data || []) as Row[]));
+        setRows(combined);
+      } catch (e) {
         if (!cancelled) {
-          setError('Failed to load timeline');
+          setError(e instanceof Error ? e.message : 'Failed to load timeline');
           setRows([]);
         }
       } finally {
