@@ -285,11 +285,13 @@ export const useServerStatus = (refreshInterval = 10000) => {
 
       previousStatus.current = newStatus;
       setStatus(newStatus);
-      setLastChecked(new Date());
+      const nowTs = new Date();
+      setLastChecked(nowTs);
+      setLastSuccess(nowTs);
 
       setUptimeHistory(prev => {
         const newEntry: ServerHistory = {
-          timestamp: new Date(),
+          timestamp: nowTs,
           status: isOnline ? 'online' : 'offline',
           players: javaPlayers,
         };
@@ -299,7 +301,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
       setError(null);
     } catch (err) {
       console.error('Failed to fetch server status:', err);
-      setError('Failed to fetch server status');
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Failed to fetch server status: ${msg}`);
       // Do NOT flip to offline on transient client errors
     } finally {
       setIsLoading(false);
