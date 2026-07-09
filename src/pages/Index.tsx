@@ -13,9 +13,12 @@ import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
 import { LastCheckDetails } from '@/components/LastCheckDetails';
 import { Users, Clock, Wifi, Activity, AlertCircle, Loader2 } from 'lucide-react';
-import { formatLocalWithTz } from '@/lib/formatTime';
+import { formatTimeWithTz } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
+import { TimeModeToggle } from '@/components/TimeModeToggle';
 
 const Index = () => {
+  const { mode: timeMode } = useTimeMode();
   const { 
     javaStatus, 
     bedrockStatus, 
@@ -61,7 +64,7 @@ const Index = () => {
                   <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                     Last successful check:{' '}
                     {lastSuccess
-                      ? `${formatLocalWithTz(lastSuccess)} (${Math.max(
+                      ? `${formatTimeWithTz(lastSuccess, timeMode)} (${Math.max(
                           0,
                           Math.round((Date.now() - lastSuccess.getTime()) / 1000)
                         )}s ago)`
@@ -69,12 +72,15 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={refetch}
-                className="shrink-0 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
-              >
-                Retry
-              </button>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <TimeModeToggle />
+                <button
+                  onClick={refetch}
+                  className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           </div>
         ) : isLoading && !javaStatus && !bedrockStatus ? (

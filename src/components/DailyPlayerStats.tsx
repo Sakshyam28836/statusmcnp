@@ -13,58 +13,45 @@ interface DailyStats {
 }
 
 export const DailyPlayerStats = () => {
-  // Fetch last 7 days of player data grouped by day
+  // Fetch last 7 days from pre-aggregated daily_uptime_records table.
+  // This avoids the raw-history 1000-row cap that was truncating the chart
+  // to only the two oldest days.
   const { data: dailyStats, isLoading } = useQuery({
-    queryKey: ['daily-player-stats'],
+    queryKey: ['daily-player-stats-agg'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('server_status_history')
-        .select('timestamp, java_players')
-        .gte('timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('timestamp', { ascending: true });
-      
-      if (error) throw error;
-      
-      // Group by Nepal date
-      const dailyData = new Map<string, { total: number; count: number; max: number }>();
-      
-      (data || []).forEach((entry) => {
-        const date = new Date(entry.timestamp);
-        const nepalDate = date.toLocaleDateString('en-CA', { 
-          timeZone: 'Asia/Kathmandu'
-        }); // YYYY-MM-DD format
-        
-        const existing = dailyData.get(nepalDate) || { total: 0, count: 0, max: 0 };
-        dailyData.set(nepalDate, {
-          total: existing.total + entry.java_players,
-          count: existing.count + 1,
-          max: Math.max(existing.max, entry.java_players)
-        });
-      });
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
 
-      // Convert to array and sort by date
-      const result: DailyStats[] = Array.from(dailyData.entries())
-        .map(([dateStr, stats]) => {
-          const date = new Date(dateStr + 'T00:00:00');
-          return {
-            date: dateStr,
-            dayName: date.toLocaleDateString('en-US', { 
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              timeZone: 'Asia/Kathmandu'
-            }),
-            avgPlayers: Math.round(stats.total / stats.count),
-            peakPlayers: stats.max,
-            checks: stats.count
-          };
-        })
-        .sort((a, b) => a.date.localeCompare(b.date));
+      const { data, error } = await supabase
+        .from('daily_uptime_records')
+        .select('date, avg_players, peak_players, total_checks')
+        .gte('date', since)
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+
+      const result: DailyStats[] = (data || []).map((row) => {
+        // Date column is a date string (YYYY-MM-DD); render label without TZ shift.
+        const d = new Date(`${row.date}T12:00:00`);
+        return {
+          date: row.date as string,
+          dayName: d.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          avgPlayers: Math.round(Number(row.avg_players ?? 0) * 10) / 10,
+          peakPlayers: Number(row.peak_players ?? 0),
+          checks: Number(row.total_checks ?? 0),
+        };
+      });
 
       return result;
     },
     refetchInterval: 60000,
   });
+
 
   const weeklyTotals = useMemo(() => {
     if (!dailyStats || dailyStats.length === 0) {

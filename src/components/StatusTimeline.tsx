@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { History, ArrowDown, ArrowUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { formatLocalWithTz, userTimeZone } from '@/lib/formatTime';
+import { formatTimeWithTz, userTimeZone } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
+import { TimeModeToggle } from './TimeModeToggle';
 
 interface TimelineEvent {
   id: string;
@@ -37,6 +39,7 @@ const formatDuration = (ms: number) => {
 };
 
 export const StatusTimeline = () => {
+  const { mode } = useTimeMode();
   const [period, setPeriod] = useState<Period>('24h');
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,27 +166,33 @@ export const StatusTimeline = () => {
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Uptime Timeline</h3>
-            <p className="text-xs text-muted-foreground">Online / offline events • times in {userTimeZone}</p>
+            <p className="text-xs text-muted-foreground">
+              Online / offline events • {mode === 'utc' ? 'UTC' : userTimeZone}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary border border-border">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={cn(
-                'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                period === p.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <TimeModeToggle />
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary border border-border">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={cn(
+                  'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                  period === p.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
 
       {/* Stat pills */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
@@ -260,7 +269,7 @@ export const StatusTimeline = () => {
                 </div>
                 <div className="flex flex-col items-end shrink-0 text-right">
                   <span className="text-xs text-foreground tabular-nums">
-                    {formatLocalWithTz(e.timestamp)}
+                    {formatTimeWithTz(e.timestamp, mode)}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {formatDistanceToNow(e.timestamp, { addSuffix: true })}
