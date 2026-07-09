@@ -269,7 +269,7 @@ export const StatusTimeline = () => {
                 </div>
                 <div className="flex flex-col items-end shrink-0 text-right">
                   <span className="text-xs text-foreground tabular-nums">
-                    {formatLocalWithTz(e.timestamp)}
+                    {formatTimeWithTz(e.timestamp, mode)}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {formatDistanceToNow(e.timestamp, { addSuffix: true })}
