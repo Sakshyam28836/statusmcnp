@@ -1,6 +1,8 @@
 import { CheckCircle2, XCircle, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatLocalWithTz, userTimeZone } from '@/lib/formatTime';
+import { formatTimeWithTz, userTimeZone } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
+import { TimeModeToggle } from './TimeModeToggle';
 import type { LastCheckDetails as Details } from '@/hooks/useServerStatus';
 
 interface Props {
@@ -27,22 +29,21 @@ const Row = ({
         <XCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
       )}
       <span className="font-medium text-foreground">{label}</span>
+      <span className={cn('text-[11px]', ok ? 'text-success/80' : 'text-destructive/80')}>
+        {ok ? 'OK' : 'Failed'}
+      </span>
     </div>
     <div className="flex items-center gap-2 min-w-0">
-      {httpStatus !== undefined && (
-        <span
-          className={cn(
-            'px-1.5 py-0.5 rounded font-mono text-[10px] tabular-nums',
-            ok
-              ? 'bg-success/10 text-success border border-success/20'
-              : 'bg-destructive/10 text-destructive border border-destructive/20'
-          )}
-        >
+      {!ok && httpStatus !== undefined && (
+        <span className="px-1.5 py-0.5 rounded font-mono text-[10px] tabular-nums bg-destructive/10 text-destructive border border-destructive/20">
           HTTP {httpStatus}
         </span>
       )}
       {!ok && errorType && (
-        <span className="text-[11px] text-destructive/90 truncate max-w-[180px] sm:max-w-[260px]" title={errorType}>
+        <span
+          className="text-[11px] text-destructive/90 truncate max-w-[180px] sm:max-w-[260px]"
+          title={errorType}
+        >
           {errorType}
         </span>
       )}
@@ -51,6 +52,7 @@ const Row = ({
 );
 
 export const LastCheckDetails = ({ details, lastSuccess }: Props) => {
+  const { mode } = useTimeMode();
   if (!details) return null;
 
   return (
@@ -60,9 +62,12 @@ export const LastCheckDetails = ({ details, lastSuccess }: Props) => {
           <Activity className="w-3.5 h-3.5 text-primary" />
           Last check details
         </div>
-        <span className="text-[10px] text-muted-foreground tabular-nums">
-          {details.durationMs}ms
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground tabular-nums">
+            {details.durationMs}ms
+          </span>
+          <TimeModeToggle />
+        </div>
       </div>
 
       <div className="divide-y divide-border/60">
@@ -84,19 +89,20 @@ export const LastCheckDetails = ({ details, lastSuccess }: Props) => {
         <span>
           Checked at{' '}
           <span className="text-foreground tabular-nums">
-            {formatLocalWithTz(details.timestamp)}
+            {formatTimeWithTz(details.timestamp, mode)}
           </span>
         </span>
         <span>
           Last success:{' '}
           <span className="text-foreground tabular-nums">
-            {lastSuccess ? formatLocalWithTz(lastSuccess) : '—'}
+            {lastSuccess ? formatTimeWithTz(lastSuccess, mode) : '—'}
           </span>
         </span>
       </div>
       <p className="mt-1 text-[10px] text-muted-foreground/70">
-        Times shown in your local timezone ({userTimeZone}).
+        {mode === 'utc' ? 'Times shown in UTC.' : `Times shown in your local timezone (${userTimeZone}).`}
       </p>
     </div>
   );
 };
+
