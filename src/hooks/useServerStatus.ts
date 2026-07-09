@@ -375,6 +375,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     status,
     lastChecked,
     lastSuccess,
+    lastCheckDetails,
     isLoading,
     error,
     uptimeHistory,
@@ -383,4 +384,5 @@ export const useServerStatus = (refreshInterval = 10000) => {
     pingMs,
     refetch: fetchStatus
   };
+
 };
