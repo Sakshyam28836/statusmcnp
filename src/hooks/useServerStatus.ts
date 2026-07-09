@@ -59,6 +59,13 @@ const transformBedrockResponse = (data: any): ServerStatus => {
   };
 };
 
+export interface LastCheckDetails {
+  timestamp: Date;
+  java: { ok: boolean; httpStatus?: number; errorType?: string };
+  bedrock: { ok: boolean; httpStatus?: number; errorType?: string };
+  durationMs: number;
+}
+
 export const useServerStatus = (refreshInterval = 10000) => {
   // All useState hooks first - in consistent order
   const [javaStatus, setJavaStatus] = useState<ServerStatus | null>(null);
@@ -68,6 +75,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [lastCheckDetails, setLastCheckDetails] = useState<LastCheckDetails | null>(null);
+
   const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pingMs, setPingMs] = useState<number | null>(null);
