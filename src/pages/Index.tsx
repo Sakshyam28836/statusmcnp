@@ -18,6 +18,7 @@ import { useTimeMode } from '@/hooks/useTimeMode';
 import { TimeModeToggle } from '@/components/TimeModeToggle';
 
 const Index = () => {
+  const { mode: timeMode } = useTimeMode();
   const { 
     javaStatus, 
     bedrockStatus, 
