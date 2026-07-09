@@ -11,7 +11,9 @@ import { StatusTimeline } from '@/components/StatusTimeline';
 import { ServerIPCard } from '@/components/ServerIPCard';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
+import { LastCheckDetails } from '@/components/LastCheckDetails';
 import { Users, Clock, Wifi, Activity, AlertCircle, Loader2 } from 'lucide-react';
+import { formatLocalWithTz } from '@/lib/formatTime';
 
 const Index = () => {
   const { 
@@ -20,6 +22,7 @@ const Index = () => {
     status, 
     lastChecked, 
     lastSuccess,
+    lastCheckDetails,
     isLoading, 
     error,
     notificationsEnabled,
@@ -58,7 +61,7 @@ const Index = () => {
                   <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                     Last successful check:{' '}
                     {lastSuccess
-                      ? `${lastSuccess.toLocaleTimeString()} (${Math.max(
+                      ? `${formatLocalWithTz(lastSuccess)} (${Math.max(
                           0,
                           Math.round((Date.now() - lastSuccess.getTime()) / 1000)
                         )}s ago)`
@@ -80,6 +83,11 @@ const Index = () => {
             <span>Fetching live server status…</span>
           </div>
         ) : null}
+
+        {/* Compact last-check diagnostics */}
+        <LastCheckDetails details={lastCheckDetails} lastSuccess={lastSuccess} />
+
+
 
 
 

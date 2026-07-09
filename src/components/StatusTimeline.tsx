@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { History, ArrowDown, ArrowUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { formatLocalWithTz, userTimeZone } from '@/lib/formatTime';
 
 interface TimelineEvent {
   id: string;
@@ -162,7 +163,7 @@ export const StatusTimeline = () => {
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Uptime Timeline</h3>
-            <p className="text-xs text-muted-foreground">Online / offline events for the selected period</p>
+            <p className="text-xs text-muted-foreground">Online / offline events • times in {userTimeZone}</p>
           </div>
         </div>
 
@@ -257,9 +258,14 @@ export const StatusTimeline = () => {
                     {e.type === 'online' ? 'Server came online' : 'Server went offline'}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {formatDistanceToNow(e.timestamp, { addSuffix: true })}
-                </span>
+                <div className="flex flex-col items-end shrink-0 text-right">
+                  <span className="text-xs text-foreground tabular-nums">
+                    {formatLocalWithTz(e.timestamp)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {formatDistanceToNow(e.timestamp, { addSuffix: true })}
+                  </span>
+                </div>
               </div>
             </li>
           ))}

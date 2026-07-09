@@ -59,6 +59,13 @@ const transformBedrockResponse = (data: any): ServerStatus => {
   };
 };
 
+export interface LastCheckDetails {
+  timestamp: Date;
+  java: { ok: boolean; httpStatus?: number; errorType?: string };
+  bedrock: { ok: boolean; httpStatus?: number; errorType?: string };
+  durationMs: number;
+}
+
 export const useServerStatus = (refreshInterval = 10000) => {
   // All useState hooks first - in consistent order
   const [javaStatus, setJavaStatus] = useState<ServerStatus | null>(null);
@@ -68,6 +75,8 @@ export const useServerStatus = (refreshInterval = 10000) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [lastCheckDetails, setLastCheckDetails] = useState<LastCheckDetails | null>(null);
+
   const [uptimeHistory, setUptimeHistory] = useState<ServerHistory[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pingMs, setPingMs] = useState<number | null>(null);
@@ -237,18 +246,58 @@ export const useServerStatus = (refreshInterval = 10000) => {
       let transformedJava: ServerStatus | null = null;
       let transformedBedrock: ServerStatus | null = null;
 
-      if (javaRes.status === 'fulfilled' && javaRes.value.ok) {
-        try {
-          const data = await javaRes.value.json();
-          transformedJava = transformJavaResponse(data);
-        } catch (e) { console.warn('Java parse failed', e); }
+      const javaDetail: LastCheckDetails['java'] = { ok: false };
+      const bedrockDetail: LastCheckDetails['bedrock'] = { ok: false };
+
+      if (javaRes.status === 'fulfilled') {
+        javaDetail.httpStatus = javaRes.value.status;
+        if (javaRes.value.ok) {
+          try {
+            const data = await javaRes.value.json();
+            transformedJava = transformJavaResponse(data);
+            javaDetail.ok = true;
+          } catch (e) {
+            javaDetail.errorType = 'JSON parse error';
+            console.warn('Java parse failed', e);
+          }
+        } else {
+          javaDetail.errorType = `HTTP ${javaRes.value.status} ${javaRes.value.statusText || ''}`.trim();
+        }
+      } else {
+        const reason = javaRes.reason;
+        javaDetail.errorType = reason instanceof Error
+          ? `${reason.name}: ${reason.message}`
+          : 'Network error';
       }
-      if (bedrockRes.status === 'fulfilled' && bedrockRes.value.ok) {
-        try {
-          const data = await bedrockRes.value.json();
-          transformedBedrock = transformBedrockResponse(data);
-        } catch (e) { console.warn('Bedrock parse failed', e); }
+
+      if (bedrockRes.status === 'fulfilled') {
+        bedrockDetail.httpStatus = bedrockRes.value.status;
+        if (bedrockRes.value.ok) {
+          try {
+            const data = await bedrockRes.value.json();
+            transformedBedrock = transformBedrockResponse(data);
+            bedrockDetail.ok = true;
+          } catch (e) {
+            bedrockDetail.errorType = 'JSON parse error';
+            console.warn('Bedrock parse failed', e);
+          }
+        } else {
+          bedrockDetail.errorType = `HTTP ${bedrockRes.value.status} ${bedrockRes.value.statusText || ''}`.trim();
+        }
+      } else {
+        const reason = bedrockRes.reason;
+        bedrockDetail.errorType = reason instanceof Error
+          ? `${reason.name}: ${reason.message}`
+          : 'Network error';
       }
+
+      setLastCheckDetails({
+        timestamp: new Date(),
+        java: javaDetail,
+        bedrock: bedrockDetail,
+        durationMs: rawPing,
+      });
+
 
       // Keep previous state if a fetch fails - don't blank the UI
       if (transformedJava) setJavaStatus(transformedJava);
@@ -326,6 +375,7 @@ export const useServerStatus = (refreshInterval = 10000) => {
     status,
     lastChecked,
     lastSuccess,
+    lastCheckDetails,
     isLoading,
     error,
     uptimeHistory,
@@ -334,4 +384,5 @@ export const useServerStatus = (refreshInterval = 10000) => {
     pingMs,
     refetch: fetchStatus
   };
+
 };
