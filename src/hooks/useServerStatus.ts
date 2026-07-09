@@ -246,18 +246,58 @@ export const useServerStatus = (refreshInterval = 10000) => {
       let transformedJava: ServerStatus | null = null;
       let transformedBedrock: ServerStatus | null = null;
 
-      if (javaRes.status === 'fulfilled' && javaRes.value.ok) {
-        try {
-          const data = await javaRes.value.json();
-          transformedJava = transformJavaResponse(data);
-        } catch (e) { console.warn('Java parse failed', e); }
+      const javaDetail: LastCheckDetails['java'] = { ok: false };
+      const bedrockDetail: LastCheckDetails['bedrock'] = { ok: false };
+
+      if (javaRes.status === 'fulfilled') {
+        javaDetail.httpStatus = javaRes.value.status;
+        if (javaRes.value.ok) {
+          try {
+            const data = await javaRes.value.json();
+            transformedJava = transformJavaResponse(data);
+            javaDetail.ok = true;
+          } catch (e) {
+            javaDetail.errorType = 'JSON parse error';
+            console.warn('Java parse failed', e);
+          }
+        } else {
+          javaDetail.errorType = `HTTP ${javaRes.value.status} ${javaRes.value.statusText || ''}`.trim();
+        }
+      } else {
+        const reason = javaRes.reason;
+        javaDetail.errorType = reason instanceof Error
+          ? `${reason.name}: ${reason.message}`
+          : 'Network error';
       }
-      if (bedrockRes.status === 'fulfilled' && bedrockRes.value.ok) {
-        try {
-          const data = await bedrockRes.value.json();
-          transformedBedrock = transformBedrockResponse(data);
-        } catch (e) { console.warn('Bedrock parse failed', e); }
+
+      if (bedrockRes.status === 'fulfilled') {
+        bedrockDetail.httpStatus = bedrockRes.value.status;
+        if (bedrockRes.value.ok) {
+          try {
+            const data = await bedrockRes.value.json();
+            transformedBedrock = transformBedrockResponse(data);
+            bedrockDetail.ok = true;
+          } catch (e) {
+            bedrockDetail.errorType = 'JSON parse error';
+            console.warn('Bedrock parse failed', e);
+          }
+        } else {
+          bedrockDetail.errorType = `HTTP ${bedrockRes.value.status} ${bedrockRes.value.statusText || ''}`.trim();
+        }
+      } else {
+        const reason = bedrockRes.reason;
+        bedrockDetail.errorType = reason instanceof Error
+          ? `${reason.name}: ${reason.message}`
+          : 'Network error';
       }
+
+      setLastCheckDetails({
+        timestamp: new Date(),
+        java: javaDetail,
+        bedrock: bedrockDetail,
+        durationMs: rawPing,
+      });
+
 
       // Keep previous state if a fetch fails - don't blank the UI
       if (transformedJava) setJavaStatus(transformedJava);
