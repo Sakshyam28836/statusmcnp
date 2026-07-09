@@ -258,9 +258,14 @@ export const StatusTimeline = () => {
                     {e.type === 'online' ? 'Server came online' : 'Server went offline'}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {formatDistanceToNow(e.timestamp, { addSuffix: true })}
-                </span>
+                <div className="flex flex-col items-end shrink-0 text-right">
+                  <span className="text-xs text-foreground tabular-nums">
+                    {formatLocalWithTz(e.timestamp)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {formatDistanceToNow(e.timestamp, { addSuffix: true })}
+                  </span>
+                </div>
               </div>
             </li>
           ))}
