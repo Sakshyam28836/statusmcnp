@@ -39,8 +39,11 @@ const formatDuration = (ms: number) => {
 };
 
 export const StatusTimeline = () => {
+  const { mode } = useTimeMode();
   const [period, setPeriod] = useState<Period>('24h');
   const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
