@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { History, ArrowDown, ArrowUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { formatLocalWithTz, userTimeZone } from '@/lib/formatTime';
 
 interface TimelineEvent {
   id: string;
