@@ -64,7 +64,7 @@ const Index = () => {
                   <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                     Last successful check:{' '}
                     {lastSuccess
-                      ? `${formatLocalWithTz(lastSuccess)} (${Math.max(
+                      ? `${formatTimeWithTz(lastSuccess, timeMode)} (${Math.max(
                           0,
                           Math.round((Date.now() - lastSuccess.getTime()) / 1000)
                         )}s ago)`
@@ -72,12 +72,15 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={refetch}
-                className="shrink-0 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
-              >
-                Retry
-              </button>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <TimeModeToggle />
+                <button
+                  onClick={refetch}
+                  className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           </div>
         ) : isLoading && !javaStatus && !bedrockStatus ? (
