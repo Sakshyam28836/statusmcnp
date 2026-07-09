@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { History, ArrowDown, ArrowUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { formatLocalWithTz, userTimeZone } from '@/lib/formatTime';
+import { formatTimeWithTz, userTimeZone } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
+import { TimeModeToggle } from './TimeModeToggle';
 
 interface TimelineEvent {
   id: string;
