@@ -39,21 +39,21 @@ const transformJavaResponse = (data: any): ServerStatus => {
   };
 };
 
-// Transform mcsrvstat.us Bedrock response
+// Transform mcstatus.io Bedrock response
 const transformBedrockResponse = (data: any): ServerStatus => {
   return {
     online: data.online === true,
-    ip: data.ip || '',
-    port: data.port || 1109,
-    hostname: data.hostname || 'bedrock.mcnpnetwork.com',
-    version: data.version || undefined,
-    // Bedrock shares the same proxy as Java, so player count is identical
-    // Don't show separate player count to avoid confusion
+    ip: data.ip_address || data.host || '',
+    port: data.port || 1667,
+    hostname: data.host || 'bedrock.mcnp.network',
+    version: data.version?.name || undefined,
+    // Bedrock shares the same proxy as Java, so player count is identical.
+    // Don't show separate player count to avoid confusion.
     players: undefined,
     motd: data.motd ? {
-      raw: Array.isArray(data.motd.raw) ? data.motd.raw : [data.motd.raw || ''],
-      clean: Array.isArray(data.motd.clean) ? data.motd.clean : [data.motd.clean || ''],
-      html: Array.isArray(data.motd.html) ? data.motd.html : [data.motd.html || '']
+      raw: [data.motd.raw || ''],
+      clean: [data.motd.clean || ''],
+      html: [data.motd.html || ''],
     } : undefined,
     gamemode: data.gamemode || undefined,
   };
