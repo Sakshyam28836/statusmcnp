@@ -163,7 +163,7 @@ export const StatusTimeline = () => {
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Uptime Timeline</h3>
-            <p className="text-xs text-muted-foreground">Online / offline events for the selected period</p>
+            <p className="text-xs text-muted-foreground">Online / offline events • times in {userTimeZone}</p>
           </div>
         </div>
 
