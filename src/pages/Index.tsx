@@ -61,7 +61,7 @@ const Index = () => {
                   <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                     Last successful check:{' '}
                     {lastSuccess
-                      ? `${lastSuccess.toLocaleTimeString()} (${Math.max(
+                      ? `${formatLocalWithTz(lastSuccess)} (${Math.max(
                           0,
                           Math.round((Date.now() - lastSuccess.getTime()) / 1000)
                         )}s ago)`
