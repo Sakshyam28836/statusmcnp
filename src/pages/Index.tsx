@@ -11,7 +11,9 @@ import { StatusTimeline } from '@/components/StatusTimeline';
 import { ServerIPCard } from '@/components/ServerIPCard';
 import { DiscordWidget } from '@/components/DiscordWidget';
 import { GameModeNav } from '@/components/GameModeNav';
+import { LastCheckDetails } from '@/components/LastCheckDetails';
 import { Users, Clock, Wifi, Activity, AlertCircle, Loader2 } from 'lucide-react';
+import { formatLocalWithTz } from '@/lib/formatTime';
 
 const Index = () => {
   const { 
