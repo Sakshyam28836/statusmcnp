@@ -22,6 +22,7 @@ const Index = () => {
     status, 
     lastChecked, 
     lastSuccess,
+    lastCheckDetails,
     isLoading, 
     error,
     notificationsEnabled,
