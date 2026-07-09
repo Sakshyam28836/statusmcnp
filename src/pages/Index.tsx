@@ -84,6 +84,11 @@ const Index = () => {
           </div>
         ) : null}
 
+        {/* Compact last-check diagnostics */}
+        <LastCheckDetails details={lastCheckDetails} lastSuccess={lastSuccess} />
+
+
+
 
 
         {/* Stats Cards */}
