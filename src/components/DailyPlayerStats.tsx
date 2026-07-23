@@ -15,10 +15,11 @@ interface DailyStats {
 }
 
 export const DailyPlayerStats = () => {
+  const { mode: timeMode } = useTimeMode();
   // Fetch last 7 days from pre-aggregated daily_uptime_records table.
   // This avoids the raw-history 1000-row cap that was truncating the chart
   // to only the two oldest days.
-  const { data: dailyStats, isLoading } = useQuery({
+  const { data: dailyStats, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ['daily-player-stats-agg'],
     queryFn: async () => {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -53,6 +54,10 @@ export const DailyPlayerStats = () => {
     },
     refetchInterval: 60000,
   });
+
+  const lastUpdatedLabel = dataUpdatedAt
+    ? formatTimeWithTz(new Date(dataUpdatedAt), timeMode)
+    : null;
 
 
   const weeklyTotals = useMemo(() => {
