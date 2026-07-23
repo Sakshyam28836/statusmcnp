@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
-import { CalendarDays, TrendingUp, Users } from 'lucide-react';
+import { CalendarDays, TrendingUp, Users, Clock, Inbox } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { formatTimeWithTz } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
 
 interface DailyStats {
   date: string;
