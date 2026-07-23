@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
-import { CalendarDays, TrendingUp, Users } from 'lucide-react';
+import { CalendarDays, TrendingUp, Users, Clock, Inbox } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { formatTimeWithTz } from '@/lib/formatTime';
+import { useTimeMode } from '@/hooks/useTimeMode';
 
 interface DailyStats {
   date: string;
@@ -13,10 +15,11 @@ interface DailyStats {
 }
 
 export const DailyPlayerStats = () => {
+  const { mode: timeMode } = useTimeMode();
   // Fetch last 7 days from pre-aggregated daily_uptime_records table.
   // This avoids the raw-history 1000-row cap that was truncating the chart
   // to only the two oldest days.
-  const { data: dailyStats, isLoading } = useQuery({
+  const { data: dailyStats, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ['daily-player-stats-agg'],
     queryFn: async () => {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -51,6 +54,10 @@ export const DailyPlayerStats = () => {
     },
     refetchInterval: 60000,
   });
+
+  const lastUpdatedLabel = dataUpdatedAt
+    ? formatTimeWithTz(new Date(dataUpdatedAt), timeMode)
+    : null;
 
 
   const weeklyTotals = useMemo(() => {
@@ -92,7 +99,15 @@ export const DailyPlayerStats = () => {
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Daily Player Stats</h3>
-            <p className="text-xs text-muted-foreground">Last 7 days • Nepal Time</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+              <span>Last 7 days • Nepal Time</span>
+              {lastUpdatedLabel && (
+                <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                  <Clock className="w-3 h-3" />
+                  Updated {lastUpdatedLabel}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -186,8 +201,16 @@ export const DailyPlayerStats = () => {
           </div>
         </>
       ) : (
-        <div className="h-48 sm:h-64 flex items-center justify-center text-muted-foreground">
-          <p className="text-sm">No daily stats available yet. Check back after a day of monitoring!</p>
+        <div className="h-48 sm:h-64 flex flex-col items-center justify-center text-center px-4 gap-3 rounded-lg border border-dashed border-border bg-secondary/20">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Inbox className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">No daily stats yet</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+              Daily aggregates roll up once per day from monitored checks. Come back after a full day of monitoring to see averages, peaks, and check counts here.
+            </p>
+          </div>
         </div>
       )}
     </div>
