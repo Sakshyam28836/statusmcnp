@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
           },
           {
             name: "🌐 Server IP",
-            value: "`play.mcnpnetwork.com:1667`",
+            value: "`play.mcnpnetwork.com:1387`",
             inline: false
           }
         ],
@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
           },
           {
             name: "🌐 Server IP",
-            value: "`play.mcnpnetwork.com:1667`",
+            value: "`play.mcnpnetwork.com:1387`",
             inline: false
           }
         ],

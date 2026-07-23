@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Using mcstatus.io API for accurate status - default ports
 const JAVA_API_URL = 'https://api.mcstatus.io/v2/status/java/mcnp.network:1667';
-const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnp.network:1667';
+const BEDROCK_API_URL = 'https://api.mcstatus.io/v2/status/bedrock/bedrock.mcnp.network:1387';
 
 // Transform mcstatus.io response to our ServerStatus format
 // Transform mcstatus.io Java response
@@ -44,7 +44,7 @@ const transformBedrockResponse = (data: any): ServerStatus => {
   return {
     online: data.online === true,
     ip: data.ip_address || data.host || '',
-    port: data.port || 1667,
+    port: data.port || 1387,
     hostname: data.host || 'bedrock.mcnp.network',
     version: data.version?.name || undefined,
     // Bedrock shares the same proxy as Java, so player count is identical.

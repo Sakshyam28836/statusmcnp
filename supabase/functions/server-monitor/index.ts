@@ -7,8 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SERVER_ADDRESS = "play.mcnpnetwork.com:1667";
-const BEDROCK_ADDRESS = "bedrock.mcnpnetwork.com:1667";
+const SERVER_ADDRESS = "play.mcnpnetwork.com:1387";
+const BEDROCK_ADDRESS = "bedrock.mcnpnetwork.com:1387";
 const JAVA_API_URL = `https://api.mcstatus.io/v2/status/java/${SERVER_ADDRESS}`;
 // Use mcsrvstat.us for Bedrock - more reliable for Bedrock edition
 const BEDROCK_API_URL = `https://api.mcsrvstat.us/bedrock/3/${BEDROCK_ADDRESS}`;

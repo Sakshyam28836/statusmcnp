@@ -139,7 +139,7 @@ const Index = () => {
           <ServerCard
             title="Bedrock Edition"
             serverData={bedrockStatus}
-            serverAddress="bedrock.mcnp.network:1667"
+            serverAddress="bedrock.mcnp.network:1387"
             isLoading={isLoading}
           />
         </section>
