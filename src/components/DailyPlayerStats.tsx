@@ -99,7 +99,15 @@ export const DailyPlayerStats = () => {
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground">Daily Player Stats</h3>
-            <p className="text-xs text-muted-foreground">Last 7 days • Nepal Time</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+              <span>Last 7 days • Nepal Time</span>
+              {lastUpdatedLabel && (
+                <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                  <Clock className="w-3 h-3" />
+                  Updated {lastUpdatedLabel}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
