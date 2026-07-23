@@ -14,6 +14,7 @@ import { GameModeNav } from '@/components/GameModeNav';
 import { LastCheckDetails } from '@/components/LastCheckDetails';
 import { ManualCheckPanel } from '@/components/ManualCheckPanel';
 import { EditionUptime } from '@/components/EditionUptime';
+import { Users, Clock, Wifi, Activity, AlertCircle, Loader2 } from 'lucide-react';
 import { formatTimeWithTz } from '@/lib/formatTime';
 import { useTimeMode } from '@/hooks/useTimeMode';
 import { TimeModeToggle } from '@/components/TimeModeToggle';
