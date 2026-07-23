@@ -95,6 +95,16 @@ const Index = () => {
         {/* Compact last-check diagnostics */}
         <LastCheckDetails details={lastCheckDetails} lastSuccess={lastSuccess} />
 
+        {/* Manual check + edition uptime */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mt-4 sm:mt-6 items-stretch">
+          <ManualCheckPanel
+            onRun={refetch}
+            isLoading={isLoading}
+            details={lastCheckDetails}
+          />
+          <EditionUptime />
+        </section>
+
 
 
 
