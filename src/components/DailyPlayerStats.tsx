@@ -201,8 +201,16 @@ export const DailyPlayerStats = () => {
           </div>
         </>
       ) : (
-        <div className="h-48 sm:h-64 flex items-center justify-center text-muted-foreground">
-          <p className="text-sm">No daily stats available yet. Check back after a day of monitoring!</p>
+        <div className="h-48 sm:h-64 flex flex-col items-center justify-center text-center px-4 gap-3 rounded-lg border border-dashed border-border bg-secondary/20">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Inbox className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">No daily stats yet</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+              Daily aggregates roll up once per day from monitored checks. Come back after a full day of monitoring to see averages, peaks, and check counts here.
+            </p>
+          </div>
         </div>
       )}
     </div>
